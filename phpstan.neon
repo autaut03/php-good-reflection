@@ -1,0 +1,10 @@
+includes:
+	- vendor/phpstan/phpstan/conf/bleedingEdge.neon
+	- vendor/phpstan/phpstan-webmozart-assert/extension.neon
+
+parameters:
+	level: max
+	tmpDir: ./tmp/phpstan
+
+	paths:
+		- src

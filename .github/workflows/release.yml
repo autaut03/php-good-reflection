@@ -1,0 +1,30 @@
+name: Release
+
+on:
+    push:
+        branches:
+            - master
+            - next
+            - next-major
+            - beta
+            - alpha
+
+jobs:
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+                with:
+                    fetch-depth: 0
+
+            -   name: Create a release
+                uses: cycjimmy/semantic-release-action@v2
+                with:
+                    extra_plugins: |
+                        @semantic-release/changelog
+                        @semantic-release/git
+                env:
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
