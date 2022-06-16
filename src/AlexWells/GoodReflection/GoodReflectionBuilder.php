@@ -54,6 +54,11 @@ class GoodReflectionBuilder
 		$this->container->singleton(Reflector::class);
 	}
 
+	public function __clone(): void
+	{
+		$this->container = clone $this->container;
+	}
+
 	public function withCache(string $path): self
 	{
 		$builder = clone $this;
@@ -78,10 +83,5 @@ class GoodReflectionBuilder
 	public function build(): ContainerInterface
 	{
 		return $this->container;
-	}
-
-	public function __clone(): void
-	{
-		$this->container = clone $this->container;
 	}
 }
