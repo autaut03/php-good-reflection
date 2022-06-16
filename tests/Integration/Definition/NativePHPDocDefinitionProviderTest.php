@@ -46,7 +46,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 			ClassStub::class,
 			new ClassTypeDefinition(
 				qualifiedName: ClassStub::class,
-				fileName: '/opt/project/tests/Stubs/Classes/ClassStub.php',
+				fileName: realpath(__DIR__ . '/../../Stubs/Classes/ClassStub.php'),
 				builtIn: false,
 				anonymous: false,
 				final: true,
