@@ -2,7 +2,7 @@ name: Release
 
 on:
     workflow_run:
-        workflows: ["Tests", "Code quality", "Code style"]
+        workflows: ["Tests"]
         types:
             - completed
         branches:
