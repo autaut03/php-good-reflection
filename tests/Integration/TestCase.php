@@ -13,7 +13,6 @@ class TestCase extends \PHPUnit\Framework\TestCase
 	{
 		parent::setUp();
 
-		$this->container = (new GoodReflectionBuilder())
-			->build();
+		$this->container = (new GoodReflectionBuilder())->build();
 	}
 }

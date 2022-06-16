@@ -42,11 +42,24 @@ class GoodReflectionBuilder
 		$this->container->singleton(PhpDocStringParser::class);
 		$this->container->singleton(NativePHPDocDefinitionProvider::class);
 		$this->container->singleton(TypeComparator::class);
-		$this->container->singleton(CacheStorage::class, fn () => new SymfonyVarExportCacheStorage(
-			__DIR__ . '/../../../tmp'
-		));
-		$this->container->singleton(VerifiedCache::class);
 
+		$this->container->singleton(
+			DefinitionProvider::class,
+			fn (Container $container) => new FallbackDefinitionProvider([
+				$container->make(BuiltInSpecialsDefinitionProvider::class),
+				$container->make(BuiltInCoreDefinitionProvider::class),
+				$container->make(NativePHPDocDefinitionProvider::class),
+			])
+		);
+		$this->container->singleton(Reflector::class);
+	}
+
+	public function withCache(string $path): self
+	{
+		$builder = clone $this;
+
+		$this->container->singleton(CacheStorage::class, fn () => new SymfonyVarExportCacheStorage($path));
+		$this->container->singleton(VerifiedCache::class);
 		$this->container->singleton(
 			DefinitionProvider::class,
 			fn (Container $container) => new FallbackDefinitionProvider([
@@ -58,11 +71,17 @@ class GoodReflectionBuilder
 				),
 			])
 		);
-		$this->container->singleton(Reflector::class);
+
+		return $builder;
 	}
 
 	public function build(): ContainerInterface
 	{
 		return $this->container;
+	}
+
+	public function __clone(): void
+	{
+		$this->container = clone $this->container;
 	}
 }
