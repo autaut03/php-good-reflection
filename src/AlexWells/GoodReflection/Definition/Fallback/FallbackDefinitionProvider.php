@@ -23,6 +23,13 @@ class FallbackDefinitionProvider implements DefinitionProvider
 		);
 	}
 
+	/**
+	 * @template ItemType
+	 *
+	 * @param callable(DefinitionProvider): ?ItemType $callback
+	 *
+	 * @return ItemType|null
+	 */
 	private function fallback(string $type, callable $callback): mixed
 	{
 		foreach ($this->providers as $provider) {

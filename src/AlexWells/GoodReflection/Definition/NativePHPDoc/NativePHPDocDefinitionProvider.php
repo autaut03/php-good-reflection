@@ -24,6 +24,7 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
+use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ReflectionClass;
 use ReflectionEnum;
 use ReflectionMethod;
@@ -109,20 +110,32 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 		);
 	}
 
+	/**
+	 * @param ReflectionClass<object> $reflection
+	 */
 	private function qualifiedName(ReflectionClass $reflection): string
 	{
 		return $reflection->getName();
 	}
 
+	/**
+	 * @param ReflectionClass<object> $reflection
+	 */
 	private function fileName(ReflectionClass $reflection): ?string
 	{
-		return $reflection->getFileName();
+		return $reflection->getFileName() ?: null;
 	}
 
+	/**
+	 * @param ReflectionClass<object>                  $reflection
+	 * @param Collection<int, TypeParameterDefinition> $typeParameters
+	 *
+	 * @return Collection<int, PropertyDefinition>
+	 */
 	private function properties(ReflectionClass $reflection, Collection $typeParameters): Collection
 	{
 		$constructorPhpDoc = $this->phpDocStringParser->parse(
-			$reflection->getConstructor()?->getDocComment() ?? ''
+			$reflection->getConstructor()?->getDocComment() ?: ''
 		);
 
 		return Collection::make($reflection->getProperties())
@@ -130,15 +143,19 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 				$phpDoc = $this->phpDocStringParser->parse($property);
 
 				// Get first @var tag (if any specified). Works for both regular and promoted properties.
+				/** @var TypeNode|null $phpDocType */
 				$phpDocType = $phpDoc->getVarTagValues()[0]->type ?? null;
 
 				// If none found, fallback to @param tag if it's a promoted property. The check for promoted property
 				// is important because there could be a property with the same name as a parameter, but those being unrelated.
 				if (!$phpDocType && $property->isPromoted()) {
-					$phpDocType = Arr::first(
+					/** @var ParamTagValueNode|null $paramNode */
+					$paramNode = Arr::first(
 						$constructorPhpDoc->getParamTagValues(),
 						fn (ParamTagValueNode $node) => $node->parameterName === $property->getName()
 					);
+
+					$phpDocType = $paramNode?->type;
 				}
 
 				return new PropertyDefinition(
@@ -153,6 +170,12 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 			});
 	}
 
+	/**
+	 * @param ReflectionClass<object>                  $reflection
+	 * @param Collection<int, TypeParameterDefinition> $typeParameters
+	 *
+	 * @return Collection<int, MethodDefinition>
+	 */
 	private function methods(ReflectionClass $reflection, Collection $typeParameters): Collection
 	{
 		return Collection::make($reflection->getMethods())
@@ -178,9 +201,15 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 			});
 	}
 
+	/**
+	 * @param ReflectionMethod|ReflectionClass<object> $reflection
+	 *
+	 * @return Collection<int, TypeParameterDefinition>
+	 */
 	private function typeParameters(ReflectionMethod|ReflectionClass $reflection, PhpDocNode $phpDoc): Collection
 	{
-		$lazyTypeParametersMap = collect();
+		/** @var Collection<string, Lazy<TypeParameterDefinition>> $lazyTypeParametersMap */
+		$lazyTypeParametersMap = new Collection();
 
 		// For whatever reason phpstan/phpdoc-parser doesn't parse the differences between @template and @template-covariant,
 		// so instead of using ->getTemplateTagValues() we'll filter tags manually.
@@ -216,10 +245,16 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 			->map(fn (Lazy $lazy) => $lazy->value());
 	}
 
+	/**
+	 * @param Collection<int, TypeParameterDefinition> $typeParameters
+	 *
+	 * @return Collection<int, FunctionParameterDefinition>
+	 */
 	private function functionParameters(ReflectionMethod $reflection, PhpDocNode $phpDoc, Collection $typeParameters): Collection
 	{
 		return Collection::make($reflection->getParameters())
 			->map(function (ReflectionParameter $parameter) use ($typeParameters, $reflection, $phpDoc) {
+				/** @var ParamTagValueNode|null $phpDocType */
 				$phpDocType = Arr::first(
 					$phpDoc->getParamTagValues(),
 					fn (ParamTagValueNode $node) => Str::after($node->parameterName, '$') === $parameter->getName()
@@ -237,9 +272,13 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 			});
 	}
 
+	/**
+	 * @param ReflectionClass<object>                  $reflection
+	 * @param Collection<int, TypeParameterDefinition> $typeParameters
+	 */
 	private function parent(ReflectionClass $reflection, PhpDocNode $phpDoc, Collection $typeParameters): ?Type
 	{
-		$parentClass = $reflection->getParentClass()?->getName();
+		$parentClass = $reflection->getParentClass() ? $reflection->getParentClass()->getName() : null;
 
 		if (!$parentClass) {
 			return null;
@@ -252,14 +291,23 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 				$parentClass === $this->typeAliasResolver->resolve($node->value->type->type->name, $reflection)
 		);
 
+		/** @var ExtendsTagValueNode|null $tagValue */
+		$tagValue = $tag?->value;
+
 		return $this->typeResolver->resolve(
 			$parentClass,
-			$tag?->value?->type,
+			$tagValue?->type,
 			$reflection,
 			$typeParameters
 		);
 	}
 
+	/**
+	 * @param ReflectionClass<object>                  $reflection
+	 * @param Collection<int, TypeParameterDefinition> $typeParameters
+	 *
+	 * @return Collection<int, Type>
+	 */
 	private function interfaces(ReflectionClass $reflection, PhpDocNode $phpDoc, Collection $typeParameters): Collection
 	{
 		return Collection::make($reflection->getInterfaceNames())
@@ -271,15 +319,23 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 						$className === $this->typeAliasResolver->resolve($node->value->type->type->name, $reflection)
 				);
 
+				/** @var ImplementsTagValueNode|ExtendsTagValueNode|null $tagValue */
+				$tagValue = $tag?->value;
+
 				return $this->typeResolver->resolve(
 					$className,
-					$tag?->value?->type,
+					$tagValue?->type,
 					$reflection,
 					$typeParameters
 				);
 			});
 	}
 
+	/**
+	 * @param ReflectionClass<object> $reflection
+	 *
+	 * @return Collection<int, Type>
+	 */
 	private function traits(ReflectionClass $reflection): Collection
 	{
 		// Because traits can be used multiple types, @uses annotations can't be specified in the class PHPDoc and instead

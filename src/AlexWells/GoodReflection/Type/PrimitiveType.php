@@ -5,7 +5,7 @@ namespace AlexWells\GoodReflection\Type;
 use AlexWells\GoodReflection\Type\Combinatorial\UnionType;
 use Illuminate\Support\Collection;
 
-class PrimitiveType
+final class PrimitiveType
 {
 	private static NamedType $object;
 
@@ -77,10 +77,10 @@ class PrimitiveType
 
 	private static function arrayKey(): UnionType
 	{
-		return static::$arrayKey ??= new UnionType(
+		return self::$arrayKey ??= new UnionType(
 			new Collection([
-				static::integer(),
-				static::string(),
+				self::integer(),
+				self::string(),
 			]),
 		);
 	}

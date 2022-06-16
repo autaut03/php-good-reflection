@@ -14,14 +14,15 @@ final class VerifiedCache
 	/**
 	 * @template ItemType
 	 *
-	 * @param callable(ItemType): string $verificationKey
+	 * @param callable(ItemType): ?string $verificationKey
+	 * @param callable(): ?ItemType       $delegate
 	 *
 	 * @return ItemType|null
 	 */
 	public function remember(string $key, callable $verificationKey, callable $delegate): mixed
 	{
 		if ($cacheItem = $this->cacheStorage->get($key)) {
-			/** @var CacheItem $cacheItem */
+			/** @var CacheItem<ItemType> $cacheItem */
 			if ($cacheItem->verificationKey !== $verificationKey($cacheItem->value)) {
 				$this->cacheStorage->remove($key);
 

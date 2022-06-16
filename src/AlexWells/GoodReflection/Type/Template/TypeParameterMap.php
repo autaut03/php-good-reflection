@@ -2,7 +2,7 @@
 
 namespace AlexWells\GoodReflection\Type\Template;
 
-use AlexWells\GoodReflection\Reflector\Old\Reflection\TypeParameters\TypeParameterReflection;
+use AlexWells\GoodReflection\Definition\TypeDefinition\TypeParameterDefinition;
 use AlexWells\GoodReflection\Type\Type;
 use Illuminate\Support\Collection;
 
@@ -17,8 +17,8 @@ final class TypeParameterMap
 	}
 
 	/**
-	 * @param Type[]                    $types
-	 * @param TypeParameterReflection[] $typeParameters
+	 * @param Type[]                            $types
+	 * @param iterable<TypeParameterDefinition> $typeParameters
 	 */
 	public static function fromConsecutiveTypes(array $types, iterable $typeParameters): self
 	{
@@ -26,16 +26,27 @@ final class TypeParameterMap
 		$i = 0;
 
 		foreach ($typeParameters as $parameter) {
-			$map[$parameter->name()] = $types[$i] ?? $parameter->type()->upperBound;
+			$map[$parameter->name] = $types[$i] ?? $parameter->type->upperBound;
 			$i++;
 		}
 
 		return new self($map);
 	}
 
+	public static function empty(): self
+	{
+		static $map;
+
+		if (!$map) {
+			$map = new self([]);
+		}
+
+		return $map;
+	}
+
 	public function toList(iterable $typeParameters): Collection
 	{
 		return Collection::wrap($typeParameters)
-			->map(fn (TypeParameterReflection $parameter) => $this->types[$parameter->name()] ?? null);
+			->map(fn (TypeParameterDefinition $parameter) => $this->types[$parameter->name] ?? null);
 	}
 }

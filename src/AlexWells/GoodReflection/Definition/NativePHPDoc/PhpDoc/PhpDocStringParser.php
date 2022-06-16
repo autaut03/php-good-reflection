@@ -8,7 +8,6 @@ use PHPStan\PhpDocParser\Parser\PhpDocParser;
 use PHPStan\PhpDocParser\Parser\TokenIterator;
 use ReflectionClass;
 use ReflectionMethod;
-use ReflectionParameter;
 use ReflectionProperty;
 use Reflector;
 
@@ -20,7 +19,10 @@ class PhpDocStringParser
 	) {
 	}
 
-	public function parse(string|ReflectionClass|ReflectionProperty|ReflectionMethod|ReflectionParameter|null $input): PhpDocNode
+	/**
+	 * @param string|ReflectionClass<object>|ReflectionProperty|ReflectionMethod|null $input
+	 */
+	public function parse(string|ReflectionClass|ReflectionProperty|ReflectionMethod|null $input): PhpDocNode
 	{
 		if ($input instanceof Reflector) {
 			$input = $input->getDocComment() ?: null;

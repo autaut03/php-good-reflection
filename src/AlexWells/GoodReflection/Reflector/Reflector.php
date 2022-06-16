@@ -11,6 +11,7 @@ use AlexWells\GoodReflection\Definition\TypeDefinition\TraitTypeDefinition;
 use AlexWells\GoodReflection\Reflector\Reflection\TypeReflection;
 use AlexWells\GoodReflection\Type\NamedType;
 use AlexWells\GoodReflection\Type\Template\TypeParameterMap;
+use AlexWells\GoodReflection\Type\Type;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -22,9 +23,10 @@ class Reflector
 	}
 
 	/**
-	 * @template T
+	 * @template T of object
 	 *
-	 * @param class-string<T>|NamedType|object $type
+	 * @param class-string<T>|NamedType|object            $type
+	 * @param Collection<int, Type>|TypeParameterMap|null $types
 	 *
 	 * @return TypeReflection<T>
 	 */
@@ -35,7 +37,13 @@ class Reflector
 		$definition = $this->definitionProvider->forType($type->name) ??
 			throw new UnknownTypeException($type->name);
 
-		$resolvedTypeParameterMap ??= TypeParameterMap::fromConsecutiveTypes($type->arguments->all(), $definition->typeParameters);
+		$resolvedTypeParameterMap = match (true) {
+			$definition instanceof ClassTypeDefinition ||
+			$definition instanceof InterfaceTypeDefinition ||
+			$definition instanceof TraitTypeDefinition ||
+			$definition instanceof SpecialTypeDefinition => TypeParameterMap::fromConsecutiveTypes($type->arguments->all(), $definition->typeParameters),
+			default                                      => TypeParameterMap::empty()
+		};
 
 		return match (true) {
 			$definition instanceof ClassTypeDefinition     => new Reflection\ClassReflection($definition, $resolvedTypeParameterMap),
@@ -47,6 +55,10 @@ class Reflector
 		};
 	}
 
+	/**
+	 * @param class-string<mixed>|NamedType|object        $className
+	 * @param Collection<int, Type>|TypeParameterMap|null $resolvedTypeParameterMap
+	 */
 	private function prepareArguments(string|object $className, Collection|TypeParameterMap $resolvedTypeParameterMap = null): NamedType
 	{
 		if (is_string($className)) {

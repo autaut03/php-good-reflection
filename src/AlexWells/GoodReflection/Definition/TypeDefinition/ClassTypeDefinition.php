@@ -8,9 +8,16 @@ use Illuminate\Support\Collection;
 
 final class ClassTypeDefinition extends TypeDefinition
 {
+	/**
+	 * @param Collection<int, TypeParameterDefinition> $typeParameters
+	 * @param Collection<int, Type>                    $implements
+	 * @param Collection<int, Type>                    $uses
+	 * @param Collection<int, PropertyDefinition>      $properties
+	 * @param Collection<int, MethodDefinition>        $methods
+	 */
 	public function __construct(
 		string $qualifiedName,
-		string $fileName,
+		?string $fileName,
 		public readonly bool $builtIn,
 		public readonly bool $anonymous,
 		public readonly bool $final,

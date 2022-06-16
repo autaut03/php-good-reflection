@@ -10,6 +10,7 @@ use AlexWells\GoodReflection\Reflector\Reflection\SpecialTypeReflection;
 use AlexWells\GoodReflection\Reflector\Reflection\TraitReflection;
 use AlexWells\GoodReflection\Reflector\Reflector;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 class NamedTypeComparator
 {
@@ -41,9 +42,9 @@ class NamedTypeComparator
 		$lastTypeParameter = $typeParameters->last();
 
 		foreach ($typeParameters->zip($a->arguments, $b->arguments) as [$typeParameter, $aArgument, $bArgument]) {
-			/** @var TypeParameterDefinition $typeParameter */
-			/* @var Type $aArgument */
-			/* @var Type $bArgument */
+			/** @var TypeParameterDefinition|null $typeParameter */
+			/* @var Type|null $aArgument */
+			/* @var Type|null $bArgument */
 			// If the last type parameter is variadic, use it.
 			if (!$typeParameter && $lastTypeParameter->variadic) {
 				$typeParameter = $lastTypeParameter;
@@ -55,8 +56,8 @@ class NamedTypeComparator
 			}
 
 			// Use default values if missing an argument.
-			$aArgument ??= $typeParameter->upperBound();
-			$bArgument ??= $typeParameter->upperBound();
+			$aArgument ??= $typeParameter->upperBound;
+			$bArgument ??= $typeParameter->upperBound;
 
 			// todo: use variance, scope, strategy?
 			if (!$this->accepts($aArgument, $bArgument)) {
@@ -84,6 +85,7 @@ class NamedTypeComparator
 				->implements(),
 			$aReflection instanceof SpecialTypeReflection => $aReflection
 				->superTypes(),
+			default => throw new InvalidArgumentException('Unsupported type of reflection (' . $aReflection::class . ') given.'),
 		};
 
 		foreach ($descendants as $type) {

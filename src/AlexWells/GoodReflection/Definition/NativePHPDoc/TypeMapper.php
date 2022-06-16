@@ -32,7 +32,6 @@ use ReflectionIntersectionType;
 use ReflectionNamedType;
 use ReflectionType;
 use ReflectionUnionType;
-use Webmozart\Assert\Assert;
 
 class TypeMapper
 {
@@ -41,19 +40,29 @@ class TypeMapper
 	) {
 	}
 
+	/**
+	 * @param ReflectionClass<object>|ReflectionFunction                                          $reflection
+	 * @param Collection<int, TypeParameterDefinition>|callable(string): ?TypeParameterDefinition $findTypeParameter
+	 */
 	public function resolve(
 		ReflectionType|string|null $nativeType,
 		?TypeNode $phpDocType,
 		ReflectionClass|ReflectionFunction $reflection,
 		Collection|callable $findTypeParameter
-	): Type {
-		Assert::true($nativeType || $phpDocType, 'Both native and PHPDoc types are missing.');
+	): ?Type {
+		if (!$nativeType && !$phpDocType) {
+			return null;
+		}
 
 		return $phpDocType ?
 			$this->mapPhpDocType($phpDocType, $reflection, $findTypeParameter) :
 			$this->mapNativeType($nativeType);
 	}
 
+	/**
+	 * @param ReflectionClass<object>|ReflectionFunction                                          $reflection
+	 * @param Collection<int, TypeParameterDefinition>|callable(string): ?TypeParameterDefinition $findTypeParameter
+	 */
 	public function mapPhpDocType(TypeNode $node, ReflectionClass|ReflectionFunction $reflection, Collection|callable $findTypeParameter): Type
 	{
 		return match (true) {
@@ -96,16 +105,29 @@ class TypeMapper
 			$node instanceof UnionTypeNode => new UnionType(
 				$this->mapPhpDocTypes($node->types, $reflection, $findTypeParameter)
 			),
-			default => new InvalidArgumentException('PHPDoc type node [' . $node::class . '] is not supported.'),
+			// todo: error type
+			default => throw new InvalidArgumentException('PHPDoc type node [' . $node::class . '] is not supported.'),
 		};
 	}
 
+	/**
+	 * @param iterable<TypeNode>                                                                  $types
+	 * @param ReflectionClass<object>|ReflectionFunction                                          $reflection
+	 * @param Collection<int, TypeParameterDefinition>|callable(string): ?TypeParameterDefinition $findTypeParameter
+	 *
+	 * @return Collection<int, Type>
+	 */
 	public function mapPhpDocTypes(array|Collection $types, ReflectionClass|ReflectionFunction $reflection, Collection|callable $findTypeParameter): Collection
 	{
 		return Collection::wrap($types)->map(fn ($type) => $this->mapPhpDocType($type, $reflection, $findTypeParameter));
 	}
 
-	public function mapPhpDocNamedType(string $type, Collection $parameters, ReflectionClass|ReflectionFunction $reflection, Collection|callable $findTypeParameter): Type
+	/**
+	 * @param Collection<int, Type>                      $arguments
+	 * @param ReflectionClass<object>|ReflectionFunction $reflection
+	 * @param Collection<int, TypeParameterDefinition>|(callable(string): ?TypeParameterDefinition) $findTypeParameter
+	 */
+	public function mapPhpDocNamedType(string $type, Collection $arguments, ReflectionClass|ReflectionFunction $reflection, Collection|callable $findTypeParameter): Type
 	{
 		if ($findTypeParameter instanceof Collection) {
 			$findTypeParameter = fn (string $name) => $findTypeParameter->first(fn (TypeParameterDefinition $typeParameter) => $typeParameter->name === $name);
@@ -133,7 +155,7 @@ class TypeMapper
 
 		$type = $this->typeAliasResolver->resolve($type, $reflection);
 
-		return new NamedType($type, $parameters);
+		return new NamedType($type, $arguments);
 	}
 
 	public function mapNativeType(ReflectionType|string $type): Type
@@ -147,7 +169,8 @@ class TypeMapper
 			),
 			$type instanceof ReflectionNamedType => $this->mapNativeNamedType($type->getName()),
 			is_string($type)                     => $this->mapNativeNamedType($type),
-			default                              => new InvalidArgumentException('Native type reflection [' . get_class($type) . '] is not supported.'),
+			// todo: error type
+			default => throw new InvalidArgumentException('Native type reflection [' . get_class($type) . '] is not supported.'),
 		};
 
 		return $type instanceof ReflectionType && $type->allowsNull() ?
@@ -155,6 +178,9 @@ class TypeMapper
 			$mappedType;
 	}
 
+	/**
+	 * @param array<int, ReflectionType|string> $types
+	 */
 	public function mapNativeTypes(array $types): array
 	{
 		return array_map(fn ($type) => $this->mapNativeType($type), $types);

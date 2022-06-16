@@ -13,16 +13,18 @@ class HasNativeAttributes implements HasAttributes
 	private Lazy $attributes;
 
 	/**
-	 * @param callable(): iterable<ReflectionAttribute> $nativeAttributes
+	 * @param callable(): list<ReflectionAttribute<object>> $nativeAttributes
 	 */
 	public function __construct(callable $nativeAttributes)
 	{
 		$this->attributes = lazy(
-			fn ()                                            => Collection::make($nativeAttributes())
-				->map(fn (ReflectionAttribute $nativeAttribute) => $nativeAttribute->newInstance())
+			fn () => Collection::make($nativeAttributes())->map(fn (ReflectionAttribute $nativeAttribute) => $nativeAttribute->newInstance())
 		);
 	}
 
+	/**
+	 * @return Collection<int, object>
+	 */
 	public function attributes(): Collection
 	{
 		return $this->attributes->value();

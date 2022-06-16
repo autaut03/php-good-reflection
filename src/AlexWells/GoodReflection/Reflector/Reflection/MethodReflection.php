@@ -4,6 +4,7 @@ namespace AlexWells\GoodReflection\Reflector\Reflection;
 
 use AlexWells\GoodReflection\Definition\TypeDefinition\FunctionParameterDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\MethodDefinition;
+use AlexWells\GoodReflection\Definition\TypeDefinition\TypeParameterDefinition;
 use AlexWells\GoodReflection\Reflector\Reflection\Attributes\HasAttributes;
 use AlexWells\GoodReflection\Reflector\Reflection\Attributes\HasNativeAttributes;
 use AlexWells\GoodReflection\Type\Template\TypeParameterMap;
@@ -19,8 +20,10 @@ use function TenantCloud\Standard\Lazy\lazy;
  */
 class MethodReflection implements HasAttributes
 {
+	/** @var Lazy<Collection<int, FunctionParameterReflection<$this>>> */
 	private Lazy $parameters;
 
+	/** @var Lazy<Type|null> */
 	private Lazy $returnType;
 
 	private readonly ReflectionMethod $nativeReflection;
@@ -41,10 +44,12 @@ class MethodReflection implements HasAttributes
 				->map(fn (FunctionParameterDefinition $parameter) => new FunctionParameterReflection($parameter, $this, $resolvedTypeParameterMap))
 		);
 		$this->returnType = lazy(
-			fn () => TypeProjector::templateTypes(
-				$this->definition->returnType,
-				$resolvedTypeParameterMap
-			)
+			fn () => $this->definition->returnType ?
+				TypeProjector::templateTypes(
+					$this->definition->returnType,
+					$resolvedTypeParameterMap
+				) :
+				null
 		);
 		$this->nativeReflection = new ReflectionMethod($this->owner->qualifiedName(), $this->definition->name);
 		$this->nativeAttributes = new HasNativeAttributes(fn () => $this->nativeReflection->getAttributes());
@@ -55,22 +60,31 @@ class MethodReflection implements HasAttributes
 		return $this->definition->name;
 	}
 
+	/**
+	 * @return Collection<int, object>
+	 */
 	public function attributes(): Collection
 	{
 		return $this->nativeAttributes->attributes();
 	}
 
+	/**
+	 * @return Collection<int, TypeParameterDefinition>
+	 */
 	public function typeParameters(): Collection
 	{
 		return $this->definition->typeParameters;
 	}
 
+	/**
+	 * @return Collection<int, FunctionParameterReflection<$this>>
+	 */
 	public function parameters(): Collection
 	{
 		return $this->parameters->value();
 	}
 
-	public function returnType(): Type
+	public function returnType(): ?Type
 	{
 		return $this->returnType->value();
 	}

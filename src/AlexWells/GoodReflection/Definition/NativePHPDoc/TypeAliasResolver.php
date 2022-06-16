@@ -18,6 +18,8 @@ class TypeAliasResolver
 
 	/**
 	 * If the given symbol was imported as an alias in the given class, the original value is returned.
+	 *
+	 * @param ReflectionClass<object>|ReflectionFunction $reflection
 	 */
 	public function resolve(string $symbol, ReflectionClass|ReflectionFunction $reflection): string
 	{
@@ -67,6 +69,9 @@ class TypeAliasResolver
 		return $this->resolveNamespaced($symbol, $reflection);
 	}
 
+	/**
+	 * @param ReflectionClass<object>|ReflectionFunction $reflection
+	 */
 	public function imported(string $symbol, ReflectionClass|ReflectionFunction $reflection): string
 	{
 		$alias = $symbol;
@@ -93,11 +98,19 @@ class TypeAliasResolver
 		return $full;
 	}
 
+	/**
+	 * @param ReflectionClass<object>|ReflectionFunction $reflection
+	 *
+	 * @return array<string, string>
+	 */
 	private function aliases(ReflectionClass|ReflectionFunction $reflection): array
 	{
 		return $this->aliases[get_class($reflection) . $reflection->name] ??= $this->phpParser->parseUseStatements($reflection);
 	}
 
+	/**
+	 * @param ReflectionClass<object>|ReflectionFunction $reflection
+	 */
 	private function resolveNamespaced(string $symbol, ReflectionClass|ReflectionFunction $reflection): string
 	{
 		if ($reflection instanceof ReflectionFunction) {

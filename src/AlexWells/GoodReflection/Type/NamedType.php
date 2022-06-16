@@ -9,6 +9,9 @@ class NamedType implements Type
 {
 	use TypeExtensions;
 
+	/**
+	 * @param Collection<int, Type> $arguments
+	 */
 	public function __construct(
 		public readonly string $name,
 		public readonly Collection $arguments = new Collection(),

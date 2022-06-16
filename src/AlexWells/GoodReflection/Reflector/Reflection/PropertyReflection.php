@@ -18,6 +18,7 @@ use function TenantCloud\Standard\Lazy\lazy;
  */
 class PropertyReflection implements HasAttributes
 {
+	/** @var Lazy<Type|null> */
 	private readonly Lazy $type;
 
 	private readonly ReflectionProperty $nativeReflection;
@@ -33,10 +34,12 @@ class PropertyReflection implements HasAttributes
 		public readonly TypeParameterMap $resolvedTypeParameterMap,
 	) {
 		$this->type = lazy(
-			fn () => TypeProjector::templateTypes(
-				$this->definition->type,
-				$resolvedTypeParameterMap
-			)
+			fn () => $this->definition->type ?
+				TypeProjector::templateTypes(
+					$this->definition->type,
+					$resolvedTypeParameterMap
+				) :
+				null
 		);
 		$this->nativeReflection = new ReflectionProperty($this->owner->qualifiedName(), $this->definition->name);
 		$this->nativeAttributes = new HasNativeAttributes(fn () => $this->nativeReflection->getAttributes());
@@ -47,11 +50,14 @@ class PropertyReflection implements HasAttributes
 		return $this->definition->name;
 	}
 
-	public function type(): Type
+	public function type(): ?Type
 	{
 		return $this->type->value();
 	}
 
+	/**
+	 * @return Collection<int, object>
+	 */
 	public function attributes(): Collection
 	{
 		return $this->nativeAttributes->attributes();

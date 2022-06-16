@@ -20,7 +20,7 @@ class FileModificationCacheDefinitionProvider implements DefinitionProvider
 	{
 		return $this->verifiedCache->remember(
 			"type:{$type}",
-			fn (TypeDefinition $definition) => $definition->fileName ? $this->fileModificationTime($definition->fileName) : null,
+			fn (TypeDefinition $definition) => $definition->fileName ? (string) $this->fileModificationTime($definition->fileName) : null,
 			fn ()                           => $this->delegate->forType($type),
 		);
 	}
