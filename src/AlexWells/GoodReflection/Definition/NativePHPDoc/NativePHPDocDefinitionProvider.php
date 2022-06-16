@@ -194,20 +194,20 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 
 			$lazyTypeParametersMap[$value->name] = lazy(
 				fn () => new TypeParameterDefinition(
-				name: $value->name,
-				variadic: false,
-				upperBound: $value->bound ?
+					name: $value->name,
+					variadic: false,
+					upperBound: $value->bound ?
 						$this->typeResolver->mapPhpDocType(
 							$value->bound,
 							$reflection instanceof ReflectionMethod ? $reflection->getDeclaringClass() : $reflection,
 							fn (string $key) => ($lazyTypeParametersMap[$key] ?? null)?->value()
 						) :
 						null,
-				variance: match (true) {
+					variance: match (true) {
 						Str::endsWith($node->name, '-covariant') => TemplateTypeVariance::COVARIANT,
 						default => TemplateTypeVariance::INVARIANT
 					}
-			)
+				)
 			);
 		}
 
