@@ -8,6 +8,11 @@ use AlexWells\GoodReflection\Type\Template\TypeParameterMap;
 use AlexWells\GoodReflection\Type\Type;
 use Illuminate\Support\Collection;
 
+/**
+ * @template-covariant T
+ *
+ * @extends TypeReflection<T>
+ */
 class SpecialTypeReflection extends TypeReflection
 {
 	public function __construct(

@@ -9,7 +9,7 @@ use Illuminate\Support\Collection;
 final class TypeParameterMap
 {
 	/**
-	 * @param array<string, Type> $types
+	 * @param array<string, Type|array<int, Type>|null> $types
 	 */
 	public function __construct(
 		public readonly array $types
@@ -17,16 +17,22 @@ final class TypeParameterMap
 	}
 
 	/**
-	 * @param Type[]                            $types
+	 * @param Type[]                            $arguments
 	 * @param iterable<TypeParameterDefinition> $typeParameters
 	 */
-	public static function fromConsecutiveTypes(array $types, iterable $typeParameters): self
+	public static function fromArguments(array $arguments, iterable $typeParameters): self
 	{
 		$map = [];
 		$i = 0;
 
 		foreach ($typeParameters as $parameter) {
-			$map[$parameter->name] = $types[$i] ?? $parameter->type->upperBound;
+			if ($parameter->variadic) {
+				$map[$parameter->name] = array_slice($arguments, $i);
+
+				break;
+			}
+
+			$map[$parameter->name] = $arguments[$i] ?? $parameter->upperBound;
 			$i++;
 		}
 

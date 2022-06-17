@@ -8,3 +8,21 @@ parameters:
 
 	paths:
 		- src
+
+	ignoreErrors:
+		# Wrong type inferrence
+		-
+			message: '#Method [a-z\\]+NativePHPDocDefinitionProvider::typeParameters\(\) should return [a-z\\]+Collection<int, [a-z\\]+TypeParameterDefinition> but returns [a-z\\]+Collection<int, mixed>#i'
+			path: 'src/AlexWells/GoodReflection/Definition/NativePHPDoc/NativePHPDocDefinitionProvider.php'
+		# Illuminate's Container isn't covered with template types
+		-
+			message: '#expects .*, .*mixed.* given#i'
+			path: 'src/AlexWells/GoodReflection/GoodReflectionBuilder.php'
+		# Illuminate's Collection isn't immutable (hence value isn't covariant) and I'm not aware of any immutable versions of it.
+		- '#expects Illuminate\\Support\\Collection<int, AlexWells\\GoodReflection\\Type\\Type>, Illuminate\\Support\\Collection<int, AlexWells\\GoodReflection\\Type\\[a-z\\]+> given#i'
+		-
+			message: '#Method [a-z\\]+::get\(\) should return static\([a-z\\]+\) but returns [a-z\\]+#i'
+			path: 'src/AlexWells/GoodReflection/Util/IsSingleton.php'
+		-
+			message: '#Unsafe usage of new static\(\)#i'
+			path: 'src/AlexWells/GoodReflection/Util/IsSingleton.php'

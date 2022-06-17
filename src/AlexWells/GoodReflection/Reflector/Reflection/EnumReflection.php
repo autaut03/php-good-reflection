@@ -13,6 +13,11 @@ use ReflectionEnum;
 use TenantCloud\Standard\Lazy\Lazy;
 use function TenantCloud\Standard\Lazy\lazy;
 
+/**
+ * @template-covariant T
+ *
+ * @extends TypeReflection<T>
+ */
 class EnumReflection extends TypeReflection implements HasAttributes
 {
 	/** @var Lazy<Collection<int, MethodReflection<$this>>> */

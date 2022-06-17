@@ -23,17 +23,14 @@ class Reflector
 	}
 
 	/**
-	 * @template T of object
+	 * @template T
 	 *
-	 * @param class-string<T>|NamedType|object            $type
-	 * @param Collection<int, Type>|TypeParameterMap|null $types
+	 * @param NamedType<T> $type
 	 *
 	 * @return TypeReflection<T>
 	 */
-	public function forType(string|object $type, Collection|TypeParameterMap $types = null): TypeReflection
+	public function forNamedType(NamedType $type): TypeReflection
 	{
-		$type = $this->prepareArguments($type, $types);
-
 		$definition = $this->definitionProvider->forType($type->name) ??
 			throw new UnknownTypeException($type->name);
 
@@ -41,7 +38,7 @@ class Reflector
 			$definition instanceof ClassTypeDefinition ||
 			$definition instanceof InterfaceTypeDefinition ||
 			$definition instanceof TraitTypeDefinition ||
-			$definition instanceof SpecialTypeDefinition => TypeParameterMap::fromConsecutiveTypes($type->arguments->all(), $definition->typeParameters),
+			$definition instanceof SpecialTypeDefinition => TypeParameterMap::fromArguments($type->arguments->all(), $definition->typeParameters),
 			default                                      => TypeParameterMap::empty()
 		};
 
@@ -56,19 +53,15 @@ class Reflector
 	}
 
 	/**
-	 * @param class-string<mixed>|NamedType|object        $className
-	 * @param Collection<int, Type>|TypeParameterMap|null $resolvedTypeParameterMap
+	 * @template T
+	 *
+	 * @param class-string<T>       $name
+	 * @param Collection<int, Type> $arguments
+	 *
+	 * @return TypeReflection<T>
 	 */
-	private function prepareArguments(string|object $className, Collection|TypeParameterMap $resolvedTypeParameterMap = null): NamedType
+	public function forType(string $name, Collection $arguments = new Collection()): TypeReflection
 	{
-		if (is_string($className)) {
-			$className = new NamedType($className);
-		}
-
-		if (!$className instanceof NamedType) {
-			$className = new NamedType(get_class($className));
-		}
-
-		return $className;
+		return $this->forNamedType(new NamedType($name, $arguments));
 	}
 }

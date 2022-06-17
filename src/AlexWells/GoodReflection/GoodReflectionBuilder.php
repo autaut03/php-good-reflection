@@ -12,8 +12,8 @@ use AlexWells\GoodReflection\Definition\DefinitionProvider;
 use AlexWells\GoodReflection\Definition\Fallback\FallbackDefinitionProvider;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\NativePHPDocDefinitionProvider;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\PhpDocStringParser;
-use AlexWells\GoodReflection\Definition\NativePHPDoc\TypeAliasResolver;
-use AlexWells\GoodReflection\Definition\NativePHPDoc\TypeMapper;
+use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\PhpDocTypeMapper;
+use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\TypeAliasResolver;
 use AlexWells\GoodReflection\Reflector\Reflector;
 use AlexWells\GoodReflection\Type\TypeComparator;
 use Doctrine\Common\Annotations\PhpParser;
@@ -34,7 +34,7 @@ class GoodReflectionBuilder
 
 		$this->container->singleton(PhpParser::class);
 		$this->container->singleton(TypeAliasResolver::class);
-		$this->container->singleton(TypeMapper::class);
+		$this->container->singleton(PhpDocTypeMapper::class);
 		$this->container->singleton(ConstExprParser::class);
 		$this->container->singleton(TypeParser::class);
 		$this->container->singleton(PhpDocParser::class);

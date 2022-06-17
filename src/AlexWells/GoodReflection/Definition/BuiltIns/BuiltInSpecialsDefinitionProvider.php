@@ -23,9 +23,6 @@ class BuiltInSpecialsDefinitionProvider implements DefinitionProvider
 			'object' => lazy(fn () => new SpecialTypeDefinition(
 				'object',
 			)),
-			'resource' => lazy(fn () => new SpecialTypeDefinition(
-				'resource',
-			)),
 			'string' => lazy(fn () => new SpecialTypeDefinition(
 				'string',
 			)),

@@ -4,6 +4,7 @@ namespace AlexWells\GoodReflection\Type;
 
 use AlexWells\GoodReflection\Type\Combinatorial\IntersectionType;
 use AlexWells\GoodReflection\Type\Combinatorial\UnionType;
+use AlexWells\GoodReflection\Type\Special\ErrorType;
 use AlexWells\GoodReflection\Type\Special\MixedType;
 use AlexWells\GoodReflection\Type\Special\NeverType;
 use AlexWells\GoodReflection\Type\Special\NullableType;
@@ -26,6 +27,7 @@ class TypeComparator
 	{
 		return match (true) {
 			$a instanceof NeverType || $b instanceof NeverType => false,
+			$a instanceof ErrorType || $b instanceof ErrorType => false,
 			$a instanceof VoidType                             => true,
 			$b instanceof VoidType                             => false,
 			$a instanceof MixedType                            => true,

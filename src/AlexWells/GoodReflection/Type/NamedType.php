@@ -5,11 +5,15 @@ namespace AlexWells\GoodReflection\Type;
 use Illuminate\Support\Collection;
 use Webmozart\Assert\Assert;
 
+/**
+ * @template-covariant T
+ */
 class NamedType implements Type
 {
 	use TypeExtensions;
 
 	/**
+	 * @param class-string<T>       $name
 	 * @param Collection<int, Type> $arguments
 	 */
 	public function __construct(
@@ -30,14 +34,6 @@ class NamedType implements Type
 			], true)
 		);
 	}
-
-	//	public static function fromMap(TypeReflection $reflection, TypeParameterMap $resolvedMap): self
-//	{
-//		return new self(
-//			name: $reflection->qualifiedName(),
-//			arguments: $resolvedMap->toList($reflection->typeParameters()),
-//		);
-//	}
 
 	public function __toString(): string
 	{

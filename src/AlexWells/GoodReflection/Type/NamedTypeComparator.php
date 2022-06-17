@@ -34,7 +34,7 @@ class NamedTypeComparator
 			return $this->accepts($a, $descendant);
 		}
 
-		$aReflection = $this->reflector->forType($a);
+		$aReflection = $this->reflector->forNamedType($a);
 
 		/** @var Collection<TypeParameterDefinition> $typeParameters */
 		$typeParameters = !$aReflection instanceof EnumReflection ? $aReflection->typeParameters() : new Collection();
@@ -70,7 +70,7 @@ class NamedTypeComparator
 
 	private function findDescendant(NamedType $a, string $className): ?NamedType
 	{
-		$aReflection = $this->reflector->forType($a);
+		$aReflection = $this->reflector->forNamedType($a);
 
 		/** @var NamedType[] $descendants */
 		$descendants = match (true) {

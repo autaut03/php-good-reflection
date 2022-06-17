@@ -4,6 +4,7 @@ namespace AlexWells\GoodReflection\Definition\BuiltIns;
 
 use AlexWells\GoodReflection\Definition\DefinitionProvider;
 use AlexWells\GoodReflection\Definition\TypeDefinition;
+use AlexWells\GoodReflection\Definition\TypeDefinition\ClassTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\FunctionParameterDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\InterfaceTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\MethodDefinition;
@@ -15,6 +16,7 @@ use AlexWells\GoodReflection\Type\Special\VoidType;
 use AlexWells\GoodReflection\Type\Template\TemplateType;
 use AlexWells\GoodReflection\Type\Template\TemplateTypeVariance;
 use ArrayAccess;
+use Closure;
 use Countable;
 use Illuminate\Support\Collection;
 use TenantCloud\Standard\Lazy\Lazy;
@@ -166,6 +168,42 @@ class BuiltInCoreDefinitionProvider implements DefinitionProvider
 						returnType: PrimitiveType::integer(),
 					),
 				])
+			)),
+			Closure::class => lazy(fn () => new ClassTypeDefinition(
+				qualifiedName: Closure::class,
+				fileName: null,
+				builtIn: true,
+				anonymous: false,
+				final: true,
+				abstract: false,
+				typeParameters: new Collection([
+					new TypeParameterDefinition(
+						name: 'TReturn',
+						variadic: false,
+						upperBound: null,
+						variance: TemplateTypeVariance::COVARIANT
+					),
+					new TypeParameterDefinition(
+						name: 'TParameter',
+						variadic: true,
+						upperBound: null,
+						variance: TemplateTypeVariance::INVARIANT
+					),
+				]),
+				extends: null,
+				implements: new Collection([
+					new NamedType('callable', new Collection([
+						new TemplateType(
+							name: 'TReturn',
+						),
+						new TemplateType(
+							name: 'TParameter',
+						),
+					])),
+				]),
+				uses: new Collection(),
+				properties: new Collection(),
+				methods: new Collection(),
 			)),
 		];
 	}
