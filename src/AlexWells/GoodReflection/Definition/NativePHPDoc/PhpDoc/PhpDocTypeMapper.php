@@ -116,8 +116,8 @@ class PhpDocTypeMapper
 				PrimitiveType::integer(),
 				PrimitiveType::string(),
 			])),
-			'array', 'callable', 'iterable', 'resource', 'object' => new NamedType($type, $arguments),
-			'associative-array', 'non-empty-array', 'list', 'non-empty-list' => $this->mapNamed('array', $arguments, $context),
+			'callable', 'iterable', 'resource', 'object' => new NamedType($type, $arguments),
+			'array', 'associative-array', 'non-empty-array', 'list', 'non-empty-list' => new NamedType('array', $arguments),
 			'scalar' => new UnionType(new Collection([
 				PrimitiveType::integer(),
 				PrimitiveType::float(),
