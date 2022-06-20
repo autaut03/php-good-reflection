@@ -4,13 +4,18 @@ namespace Tests\Integration\Type;
 
 use AlexWells\GoodReflection\Type\Combinatorial\IntersectionType;
 use AlexWells\GoodReflection\Type\Combinatorial\UnionType;
+use AlexWells\GoodReflection\Type\NamedType;
 use AlexWells\GoodReflection\Type\PrimitiveType;
 use AlexWells\GoodReflection\Type\Special\NullableType;
 use AlexWells\GoodReflection\Type\Type;
 use AlexWells\GoodReflection\Type\TypeComparator;
+use Closure;
 use Generator;
 use Illuminate\Support\Collection;
 use Tests\Integration\TestCase;
+use Tests\Stubs\Classes\ClassStub;
+use Tests\Stubs\Classes\ParentClassStub;
+use Tests\Stubs\Classes\SomeStub;
 
 /**
  * @see TypeComparator
@@ -27,7 +32,16 @@ class TypeComparatorTest extends TestCase
 	}
 
 	/**
-	 * @dataProvider acceptsProvider
+	 * @dataProvider acceptsIntersectionProvider
+	 * @dataProvider acceptsUnionProvider
+	 * @dataProvider acceptsErrorProvider
+	 * @dataProvider acceptsMixedProvider
+	 * @dataProvider acceptsNeverProvider
+	 * @dataProvider acceptsNullableProvider
+	 * @dataProvider acceptsStaticProvider
+	 * @dataProvider acceptsVoidProvider
+	 * @dataProvider acceptsTemplateProvider
+	 * @dataProvider acceptsNamedProvider
 	 */
 	public function testAccepts(bool $expected, Type $a, Type $b): void
 	{
@@ -38,7 +52,32 @@ class TypeComparatorTest extends TestCase
 		);
 	}
 
-	public function acceptsProvider(): Generator
+	public function acceptsIntersectionProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsUnionProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsErrorProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsMixedProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsNeverProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsNullableProvider(): Generator
 	{
 		yield '?string <= ?string' => [
 			true,
@@ -116,6 +155,78 @@ class TypeComparatorTest extends TestCase
 			false,
 			new IntersectionType(new Collection([new NullableType(PrimitiveType::string()), PrimitiveType::integer()])),
 			new NullableType(PrimitiveType::string()),
+		];
+	}
+
+	public function acceptsStaticProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsVoidProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsTemplateProvider(): Generator
+	{
+		yield from [];
+	}
+
+	public function acceptsNamedProvider(): Generator
+	{
+		yield 'SomeStub <= SomeStub' => [
+			true,
+			new NamedType(SomeStub::class),
+			new NamedType(SomeStub::class),
+		];
+
+		yield 'ParentClassStub <= SomeStub' => [
+			false,
+			new NamedType(ParentClassStub::class),
+			new NamedType(SomeStub::class),
+		];
+
+		yield 'SomeStub <= ParentClassStub' => [
+			false,
+			new NamedType(SomeStub::class),
+			new NamedType(ParentClassStub::class),
+		];
+
+		yield 'ClassStub<SomeStub> <= ClassStub<SomeStub>' => [
+			true,
+			new NamedType(ClassStub::class, new Collection([
+				new NamedType(SomeStub::class),
+				PrimitiveType::integer(),
+			])),
+			new NamedType(ClassStub::class, new Collection([
+				new NamedType(SomeStub::class),
+				PrimitiveType::integer(),
+			])),
+		];
+
+		yield 'callable(int): float <= Closure(float): int' => [
+			true,
+			new NamedType('callable', new Collection([
+				PrimitiveType::float(),
+				PrimitiveType::integer(),
+			])),
+			new NamedType(Closure::class, new Collection([
+				PrimitiveType::integer(),
+				PrimitiveType::float(),
+			])),
+		];
+
+		yield 'callable(float): int <= Closure(int): float' => [
+			false,
+			new NamedType('callable', new Collection([
+				PrimitiveType::integer(),
+				PrimitiveType::float(),
+			])),
+			new NamedType(Closure::class, new Collection([
+				PrimitiveType::float(),
+				PrimitiveType::integer(),
+			])),
 		];
 	}
 }

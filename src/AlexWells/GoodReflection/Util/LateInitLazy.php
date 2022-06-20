@@ -6,7 +6,9 @@ use RuntimeException;
 use TenantCloud\Standard\Lazy\Lazy;
 
 /**
- * @template-covariant  T
+ * @template  T
+ *
+ * @implements Lazy<T>
  */
 class LateInitLazy implements Lazy
 {

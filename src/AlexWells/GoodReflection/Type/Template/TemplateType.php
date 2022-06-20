@@ -18,7 +18,7 @@ class TemplateType implements Type
 
 	public function traverse(callable $callback): Type
 	{
-		// TODO: Implement traverse() method.
+		return $this;
 	}
 
 	public function equals(Type $other): bool

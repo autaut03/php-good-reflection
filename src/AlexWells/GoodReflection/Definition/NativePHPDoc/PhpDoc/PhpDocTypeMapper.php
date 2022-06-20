@@ -4,6 +4,7 @@ namespace AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc;
 
 use AlexWells\GoodReflection\Definition\NativePHPDoc\TypeContext;
 use AlexWells\GoodReflection\Type\Combinatorial\IntersectionType;
+use AlexWells\GoodReflection\Type\Combinatorial\TupleType;
 use AlexWells\GoodReflection\Type\Combinatorial\UnionType;
 use AlexWells\GoodReflection\Type\NamedType;
 use AlexWells\GoodReflection\Type\PrimitiveType;
@@ -17,6 +18,8 @@ use AlexWells\GoodReflection\Type\Template\TemplateType;
 use AlexWells\GoodReflection\Type\Type;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeItemNode;
+use PHPStan\PhpDocParser\Ast\Type\ArrayShapeNode;
 use PHPStan\PhpDocParser\Ast\Type\ArrayTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\CallableTypeParameterNode;
@@ -49,6 +52,9 @@ class PhpDocTypeMapper
 		return match (true) {
 			$node instanceof ArrayTypeNode => PrimitiveType::array(
 				$this->map($node->type, $context)
+			),
+			$node instanceof ArrayShapeNode                           => new TupleType(
+				collect($node->items)->map(fn (ArrayShapeItemNode $node) => $this->map($node->valueType, $context))
 			),
 			$node instanceof CallableTypeNode => $this->mapNamed(
 				$node->identifier->name,

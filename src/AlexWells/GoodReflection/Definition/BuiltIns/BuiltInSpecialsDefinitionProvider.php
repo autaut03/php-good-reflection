@@ -28,6 +28,10 @@ class BuiltInSpecialsDefinitionProvider implements DefinitionProvider
 			)),
 			'int' => lazy(fn () => new SpecialTypeDefinition(
 				'int',
+				new Collection(),
+				new Collection([
+					new NamedType('float'),
+				])
 			)),
 			'float' => lazy(fn () => new SpecialTypeDefinition(
 				'float',
@@ -92,7 +96,7 @@ class BuiltInSpecialsDefinitionProvider implements DefinitionProvider
 						name: 'TParameter',
 						variadic: true,
 						upperBound: null,
-						variance: TemplateTypeVariance::INVARIANT
+						variance: TemplateTypeVariance::CONTRAVARIANT
 					),
 				])
 			)),

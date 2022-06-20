@@ -3,6 +3,7 @@
 namespace AlexWells\GoodReflection\Type\Template;
 
 use AlexWells\GoodReflection\Definition\TypeDefinition\TypeParameterDefinition;
+use AlexWells\GoodReflection\Type\Combinatorial\TupleType;
 use AlexWells\GoodReflection\Type\Type;
 use Illuminate\Support\Collection;
 
@@ -27,12 +28,16 @@ final class TypeParameterMap
 
 		foreach ($typeParameters as $parameter) {
 			if ($parameter->variadic) {
-				$map[$parameter->name] = array_slice($arguments, $i);
+				$map[$parameter->name] = new TupleType(collect(array_slice($arguments, $i)));
 
 				break;
 			}
 
-			$map[$parameter->name] = $arguments[$i] ?? $parameter->upperBound;
+			if (!$argument = $arguments[$i] ?? null) {
+				break;
+			}
+
+			$map[$parameter->name] = $argument;
 			$i++;
 		}
 
@@ -50,6 +55,11 @@ final class TypeParameterMap
 		return $map;
 	}
 
+	/**
+	 * @param iterable<TypeParameterDefinition> $typeParameters
+	 *
+	 * @return Collection<int, Type>
+	 */
 	public function toList(iterable $typeParameters): Collection
 	{
 		return Collection::wrap($typeParameters)

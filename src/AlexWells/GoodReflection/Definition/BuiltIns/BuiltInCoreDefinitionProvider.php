@@ -9,6 +9,7 @@ use AlexWells\GoodReflection\Definition\TypeDefinition\FunctionParameterDefiniti
 use AlexWells\GoodReflection\Definition\TypeDefinition\InterfaceTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\MethodDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\TypeParameterDefinition;
+use AlexWells\GoodReflection\Type\Combinatorial\ExpandedType;
 use AlexWells\GoodReflection\Type\NamedType;
 use AlexWells\GoodReflection\Type\PrimitiveType;
 use AlexWells\GoodReflection\Type\Special\NullableType;
@@ -187,7 +188,7 @@ class BuiltInCoreDefinitionProvider implements DefinitionProvider
 						name: 'TParameter',
 						variadic: true,
 						upperBound: null,
-						variance: TemplateTypeVariance::INVARIANT
+						variance: TemplateTypeVariance::CONTRAVARIANT
 					),
 				]),
 				extends: null,
@@ -196,8 +197,10 @@ class BuiltInCoreDefinitionProvider implements DefinitionProvider
 						new TemplateType(
 							name: 'TReturn',
 						),
-						new TemplateType(
-							name: 'TParameter',
+						new ExpandedType(
+							new TemplateType(
+								name: 'TParameter',
+							)
 						),
 					])),
 				]),

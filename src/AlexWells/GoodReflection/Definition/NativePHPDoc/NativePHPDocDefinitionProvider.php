@@ -182,7 +182,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 		);
 
 		return Collection::make($reflection->getProperties())
-			->map(function (ReflectionProperty $property) use ($context , $constructorPhpDoc) {
+			->map(function (ReflectionProperty $property) use ($context, $constructorPhpDoc) {
 				$phpDoc = $this->phpDocStringParser->parse($property);
 
 				// Get first @var tag (if any specified). Works for both regular and promoted properties.
@@ -275,6 +275,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 							null,
 						variance: match (true) {
 							Str::endsWith($node->name, '-covariant') => TemplateTypeVariance::COVARIANT,
+							Str::endsWith($node->name, '-contravariant') => TemplateTypeVariance::CONTRAVARIANT,
 							default => TemplateTypeVariance::INVARIANT
 						}
 					);
@@ -303,7 +304,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 	private function functionParameters(ReflectionMethod $reflection, PhpDocNode $phpDoc, TypeContext $context): Collection
 	{
 		return Collection::make($reflection->getParameters())
-			->map(function (ReflectionParameter $parameter) use ($context , $phpDoc) {
+			->map(function (ReflectionParameter $parameter) use ($context, $phpDoc) {
 				/** @var ParamTagValueNode|null $phpDocType */
 				$phpDocType = Arr::first(
 					$phpDoc->getParamTagValues(),
@@ -357,7 +358,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 	private function interfaces(ReflectionClass $reflection, PhpDocNode $phpDoc, TypeContext $context): Collection
 	{
 		return Collection::make($reflection->getInterfaceNames())
-			->map(function (string $className) use ($context , $phpDoc) {
+			->map(function (string $className) use ($context, $phpDoc) {
 				/** @var PhpDocTagNode|null $tag */
 				$tag = Arr::first(
 					$phpDoc->getTags(),
