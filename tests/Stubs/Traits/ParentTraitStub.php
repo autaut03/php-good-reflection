@@ -8,4 +8,5 @@ namespace Tests\Stubs\Traits;
  */
 trait ParentTraitStub
 {
+	public int $prop;
 }

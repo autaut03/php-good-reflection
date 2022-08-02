@@ -17,6 +17,7 @@ final class EnumTypeDefinition extends TypeDefinition
 		string $qualifiedName,
 		?string $fileName,
 		public readonly bool $builtIn,
+		public readonly ?Type $backingType,
 		public readonly Collection $implements,
 		public readonly Collection $uses,
 		public readonly Collection $cases,

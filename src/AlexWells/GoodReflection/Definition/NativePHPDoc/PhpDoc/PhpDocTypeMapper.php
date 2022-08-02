@@ -139,7 +139,7 @@ class PhpDocTypeMapper
 			return $specialType;
 		}
 
-		$type = $this->typeAliasResolver->resolve($type, $context->fileContext);
+		$type = $this->typeAliasResolver->resolve($type, $context->fileClassLikeContext);
 
 		return new NamedType($type, $arguments);
 	}

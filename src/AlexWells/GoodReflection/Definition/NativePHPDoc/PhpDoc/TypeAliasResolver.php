@@ -2,7 +2,7 @@
 
 namespace AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc;
 
-use AlexWells\GoodReflection\Definition\NativePHPDoc\File\FileContext;
+use AlexWells\GoodReflection\Definition\NativePHPDoc\File\FileClassLikeContext;
 use Illuminate\Support\Str;
 
 class TypeAliasResolver
@@ -17,7 +17,7 @@ class TypeAliasResolver
 		return mb_strtolower($symbol);
 	}
 
-	public function resolve(string $symbol, FileContext $fileContext): string
+	public function resolve(string $symbol, FileClassLikeContext $fileClassLikeContext): string
 	{
 		// Globally referenced types should always be treated as type names.
 		if (str_starts_with($symbol, '\\')) {
@@ -37,20 +37,20 @@ class TypeAliasResolver
 			return $lowerSymbol;
 		}
 
-		$alias = $this->imported($symbol, $fileContext);
+		$alias = $this->imported($symbol, $fileClassLikeContext);
 
 		if ($alias !== $symbol) {
 			return $alias;
 		}
 
-		if ($fileContext->namespace) {
-			return "{$fileContext->namespace}\\{$symbol}";
+		if ($fileClassLikeContext->namespace) {
+			return "{$fileClassLikeContext->namespace}\\{$symbol}";
 		}
 
 		return $symbol;
 	}
 
-	public function imported(string $symbol, FileContext $fileContext): string
+	public function imported(string $symbol, FileClassLikeContext $fileClassLikeContext): string
 	{
 		$alias = $symbol;
 
@@ -61,11 +61,11 @@ class TypeAliasResolver
 			$alias = mb_strtolower($lastPart);
 		}
 
-		if (!isset($fileContext->uses[$alias])) {
+		if (!isset($fileClassLikeContext->uses[$alias])) {
 			return $symbol;
 		}
 
-		$full = $fileContext->uses[$alias];
+		$full = $fileClassLikeContext->uses[$alias];
 
 		if (!empty($namespaceParts)) {
 			$full .= '\\' . implode('\\', $namespaceParts);

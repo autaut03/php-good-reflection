@@ -18,6 +18,8 @@ use AlexWells\GoodReflection\Reflector\Reflector;
 use AlexWells\GoodReflection\Type\TypeComparator;
 use Doctrine\Common\Annotations\PhpParser;
 use Illuminate\Container\Container;
+use PhpParser\Lexer\Emulative;
+use PhpParser\Parser;
 use PHPStan\PhpDocParser\Lexer\Lexer;
 use PHPStan\PhpDocParser\Parser\ConstExprParser;
 use PHPStan\PhpDocParser\Parser\PhpDocParser;
@@ -32,7 +34,7 @@ class GoodReflectionBuilder
 	{
 		$this->container = new Container();
 
-		$this->container->singleton(PhpParser::class);
+		$this->container->singleton(Parser::class, fn () => new Parser\Php7(new Emulative()));
 		$this->container->singleton(TypeAliasResolver::class);
 		$this->container->singleton(PhpDocTypeMapper::class);
 		$this->container->singleton(ConstExprParser::class);

@@ -3,13 +3,14 @@
 namespace AlexWells\GoodReflection\Definition\NativePHPDoc;
 
 use AlexWells\GoodReflection\Definition\DefinitionProvider;
-use AlexWells\GoodReflection\Definition\NativePHPDoc\File\FileContextFactory;
+use AlexWells\GoodReflection\Definition\NativePHPDoc\File\FileContextParser;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\Native\NativeTypeMapper;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\PhpDocStringParser;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\PhpDocTypeMapper;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\TypeAliasResolver;
 use AlexWells\GoodReflection\Definition\TypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\ClassTypeDefinition;
+use AlexWells\GoodReflection\Definition\TypeDefinition\EnumCaseDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\EnumTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\FunctionParameterDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\InterfaceTypeDefinition;
@@ -24,6 +25,7 @@ use AlexWells\GoodReflection\Util\LateInitLazy;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use PhpParser\Builder\EnumCase;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ExtendsTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ImplementsTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
@@ -33,6 +35,8 @@ use PHPStan\PhpDocParser\Ast\PhpDoc\TemplateTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use ReflectionClass;
 use ReflectionEnum;
+use ReflectionEnumBackedCase;
+use ReflectionEnumUnitCase;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
@@ -45,10 +49,10 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 {
 	public function __construct(
 		private readonly PhpDocStringParser $phpDocStringParser,
-		private readonly FileContextFactory $fileContextFactory,
-		private readonly TypeAliasResolver $typeAliasResolver,
-		private readonly NativeTypeMapper $nativeTypeMapper,
-		private readonly PhpDocTypeMapper $phpDocTypeMapper
+		private readonly FileContextParser  $fileContextParser,
+		private readonly TypeAliasResolver  $typeAliasResolver,
+		private readonly NativeTypeMapper   $nativeTypeMapper,
+		private readonly PhpDocTypeMapper   $phpDocTypeMapper
 	) {
 	}
 
@@ -134,9 +138,10 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 			qualifiedName: $this->qualifiedName($reflection),
 			fileName: $this->fileName($reflection),
 			builtIn: !$reflection->isUserDefined(),
+			backingType: $reflection->isBacked() ? $this->nativeTypeMapper->map($reflection->getBackingType(), $context) : null,
 			implements: $this->interfaces($reflection, $phpDoc, $context),
 			uses: $this->traits($reflection, $context),
-			cases: new Collection(),
+			cases: $this->enumCases($reflection),
 			methods: $this->methods($reflection, $context),
 		);
 	}
@@ -144,7 +149,9 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 	private function createTypeContext(ReflectionClass $reflection, PhpDocNode $phpDoc): TypeContext
 	{
 		$context = new TypeContext(
-			fileContext: $this->fileContextFactory->make($reflection),
+			fileClassLikeContext: $this->fileContextParser
+				->parse($reflection)
+				->forClassLike($reflection),
 			definingType: new NamedType($reflection->getName()),
 			typeParameters: new Collection()
 		);
@@ -182,6 +189,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 		);
 
 		return Collection::make($reflection->getProperties())
+			->filter(fn (ReflectionProperty $property) => $context->fileClassLikeContext->declaredProperties->contains($property->getName()))
 			->map(function (ReflectionProperty $property) use ($context, $constructorPhpDoc) {
 				$phpDoc = $this->phpDocStringParser->parse($property);
 
@@ -220,6 +228,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 	private function methods(ReflectionClass $reflection, TypeContext $context): Collection
 	{
 		return Collection::make($reflection->getMethods())
+			->filter(fn (ReflectionMethod $method) => $context->fileClassLikeContext->declaredMethods->contains($method->getName()))
 			->map(function (ReflectionMethod $method) use ($context) {
 				$phpDoc = $this->phpDocStringParser->parse($method);
 
@@ -337,7 +346,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 		$tag = Arr::first(
 			$phpDoc->getTags(),
 			fn (PhpDocTagNode $node) => $node->value instanceof ExtendsTagValueNode &&
-				$parentClass === $this->typeAliasResolver->resolve($node->value->type->type->name, $context->fileContext)
+				$parentClass === $this->typeAliasResolver->resolve($node->value->type->type->name, $context->fileClassLikeContext)
 		);
 
 		/** @var ExtendsTagValueNode|null $tagValue */
@@ -363,7 +372,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 				$tag = Arr::first(
 					$phpDoc->getTags(),
 					fn (PhpDocTagNode $node) => ($node->value instanceof ImplementsTagValueNode || $node->value instanceof ExtendsTagValueNode) &&
-						$className === $this->typeAliasResolver->resolve($node->value->type->type->name, $context->fileContext)
+						$className === $this->typeAliasResolver->resolve($node->value->type->type->name, $context->fileClassLikeContext)
 				);
 
 				/** @var ImplementsTagValueNode|ExtendsTagValueNode|null $tagValue */
@@ -393,5 +402,19 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 		// on PHPDoc for trait uses, so we'll just say generic traits are unsupported due to the complexity of doing so.
 		return Collection::make($reflection->getTraitNames())
 			->map(fn (string $className) => $this->nativeTypeMapper->map($className, $context));
+	}
+
+	/**
+	 * @param ReflectionClass<object> $reflection
+	 *
+	 * @return Collection<int, EnumCaseDefinition>
+	 */
+	private function enumCases(ReflectionEnum $reflection): Collection
+	{
+		return Collection::make($reflection->getCases())
+			->map(fn (ReflectionEnumUnitCase $case) => new EnumCaseDefinition(
+				name: $case->getName(),
+				backingValue: $case instanceof ReflectionEnumBackedCase ? $case->getBackingValue() : null,
+			));
 	}
 }

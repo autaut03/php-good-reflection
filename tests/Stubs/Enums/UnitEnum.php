@@ -12,10 +12,11 @@ enum UnitEnum implements NonGenericInterface
 		otherFunction as otherOtherFunction;
 	}
 
-	public function function(string|int $i, ?string $overwritten = null): string|int|null
-	{
-	}
-
 	case FIRST;
 	case SECOND;
+
+	public function function (string $i): mixed
+	{
+		// TODO: Implement function() method.
+	}
 }

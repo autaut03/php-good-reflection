@@ -2,7 +2,7 @@
 
 namespace AlexWells\GoodReflection\Definition\NativePHPDoc;
 
-use AlexWells\GoodReflection\Definition\NativePHPDoc\File\FileContext;
+use AlexWells\GoodReflection\Definition\NativePHPDoc\File\FileClassLikeContext;
 use AlexWells\GoodReflection\Definition\TypeDefinition\TypeParameterDefinition;
 use AlexWells\GoodReflection\Type\NamedType;
 use Illuminate\Support\Collection;
@@ -14,9 +14,9 @@ class TypeContext
 	 * @param Collection<string, Lazy<TypeParameterDefinition>> $typeParameters
 	 */
 	public function __construct(
-		public readonly FileContext $fileContext,
-		public readonly NamedType $definingType,
-		public readonly Collection $typeParameters
+		public readonly FileClassLikeContext $fileClassLikeContext,
+		public readonly NamedType            $definingType,
+		public readonly Collection           $typeParameters
 	) {
 	}
 
@@ -26,7 +26,7 @@ class TypeContext
 	public function withMergedTypeParameters(Collection $parameters): self
 	{
 		return new self(
-			fileContext: $this->fileContext,
+			fileClassLikeContext: $this->fileClassLikeContext,
 			definingType: $this->definingType,
 			typeParameters: (clone $this->typeParameters)->merge($parameters)
 		);

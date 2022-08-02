@@ -5,9 +5,13 @@ namespace Tests\Integration\Definition;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\NativePHPDocDefinitionProvider;
 use AlexWells\GoodReflection\Definition\TypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\ClassTypeDefinition;
+use AlexWells\GoodReflection\Definition\TypeDefinition\EnumCaseDefinition;
+use AlexWells\GoodReflection\Definition\TypeDefinition\EnumTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\FunctionParameterDefinition;
+use AlexWells\GoodReflection\Definition\TypeDefinition\InterfaceTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\MethodDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\PropertyDefinition;
+use AlexWells\GoodReflection\Definition\TypeDefinition\TraitTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\TypeParameterDefinition;
 use AlexWells\GoodReflection\Type\Combinatorial\UnionType;
 use AlexWells\GoodReflection\Type\NamedType;
@@ -27,12 +31,20 @@ use Tests\Stubs\Classes\AllMissingTypes;
 use Tests\Stubs\Classes\AllNativeTypes;
 use Tests\Stubs\Classes\AllPhpDocTypes;
 use Tests\Stubs\Classes\ClassStub;
+use Tests\Stubs\Classes\ContravariantParameter;
+use Tests\Stubs\Classes\CovariantParameter;
 use Tests\Stubs\Classes\DoubleTemplateType;
+use Tests\Stubs\Classes\InvariantParameter;
 use Tests\Stubs\Classes\ParentClassStub;
 use Tests\Stubs\Classes\SomeStub;
+use Tests\Stubs\Enums\BackedEnum;
+use Tests\Stubs\Enums\UnitEnum;
+use Tests\Stubs\Interfaces\NonGenericInterface;
 use Tests\Stubs\Interfaces\ParentInterfaceStub;
+use Tests\Stubs\Interfaces\SingleGenericInterface;
 use Tests\Stubs\Interfaces\SingleTemplateType;
 use Tests\Stubs\Traits\ParentTraitStub;
+use Tests\Stubs\Traits\TraitWithoutProperties;
 
 /**
  * @see NativePHPDocDefinitionProvider
@@ -558,6 +570,214 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 							new NamedType(AllPhpDocTypes::class)
 						),
 					),
+				]),
+			),
+		];
+
+		yield [
+			InvariantParameter::class,
+			new ClassTypeDefinition(
+				qualifiedName: InvariantParameter::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Classes/InvariantParameter.php'),
+				builtIn: false,
+				anonymous: false,
+				final: false,
+				abstract: false,
+				typeParameters: new Collection([
+					new TypeParameterDefinition(
+						name: 'T',
+						variadic: false,
+						upperBound: null,
+						variance: TemplateTypeVariance::INVARIANT,
+					)
+				]),
+				extends: null,
+				implements: new Collection(),
+				uses: new Collection(),
+				properties: new Collection(),
+				methods: new Collection(),
+			),
+		];
+
+		yield [
+			ContravariantParameter::class,
+			new ClassTypeDefinition(
+				qualifiedName: ContravariantParameter::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Classes/ContravariantParameter.php'),
+				builtIn: false,
+				anonymous: false,
+				final: false,
+				abstract: false,
+				typeParameters: new Collection([
+					new TypeParameterDefinition(
+						name: 'T',
+						variadic: false,
+						upperBound: null,
+						variance: TemplateTypeVariance::CONTRAVARIANT,
+					)
+				]),
+				extends: null,
+				implements: new Collection(),
+				uses: new Collection(),
+				properties: new Collection(),
+				methods: new Collection(),
+			),
+		];
+
+		yield [
+			CovariantParameter::class,
+			new ClassTypeDefinition(
+				qualifiedName: CovariantParameter::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Classes/CovariantParameter.php'),
+				builtIn: false,
+				anonymous: false,
+				final: false,
+				abstract: false,
+				typeParameters: new Collection([
+					new TypeParameterDefinition(
+						name: 'T',
+						variadic: false,
+						upperBound: null,
+						variance: TemplateTypeVariance::COVARIANT,
+					)
+				]),
+				extends: null,
+				implements: new Collection(),
+				uses: new Collection(),
+				properties: new Collection(),
+				methods: new Collection(),
+			),
+		];
+
+		yield [
+			NonGenericInterface::class,
+			new InterfaceTypeDefinition(
+				qualifiedName: NonGenericInterface::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Interfaces/NonGenericInterface.php'),
+				builtIn: false,
+				typeParameters: new Collection(),
+				extends: new Collection(),
+				methods: new Collection([
+					new MethodDefinition(
+						name: 'function',
+						typeParameters: new Collection(),
+						parameters: new Collection([
+							new FunctionParameterDefinition(
+								name: 'i',
+								type: PrimitiveType::string(),
+							)
+						]),
+						returnType: MixedType::get(),
+					)
+				]),
+			),
+		];
+
+		yield [
+			SingleTemplateType::class,
+			new InterfaceTypeDefinition(
+				qualifiedName: SingleTemplateType::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Interfaces/SingleTemplateType.php'),
+				builtIn: false,
+				typeParameters: new Collection([
+					new TypeParameterDefinition(
+						name: 'T',
+						variadic: false,
+						upperBound: null,
+						variance: TemplateTypeVariance::INVARIANT,
+					)
+				]),
+				extends: new Collection(),
+				methods: new Collection(),
+			),
+		];
+
+		yield [
+			TraitWithoutProperties::class,
+			new TraitTypeDefinition(
+				qualifiedName: TraitWithoutProperties::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Traits/TraitWithoutProperties.php'),
+				builtIn: false,
+				typeParameters: new Collection(),
+				uses: new Collection(),
+				properties: new Collection(),
+				methods: new Collection([
+					new MethodDefinition(
+						name: 'otherFunction',
+						typeParameters: new Collection(),
+						parameters: new Collection(),
+						returnType: new NamedType(Generator::class),
+					)
+				]),
+			),
+		];
+
+		yield [
+			BackedEnum::class,
+			new EnumTypeDefinition(
+				qualifiedName: BackedEnum::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Enums/BackedEnum.php'),
+				builtIn: false,
+				backingType: PrimitiveType::string(),
+				implements: new Collection([
+					new NamedType(SingleGenericInterface::class, new Collection([
+						PrimitiveType::string(),
+					])),
+					new NamedType(\UnitEnum::class),
+					new NamedType(\BackedEnum::class)
+				]),
+				uses: new Collection(),
+				cases: new Collection([
+					new EnumCaseDefinition(
+						name: 'FIRST',
+						backingValue: 'first',
+					),
+					new EnumCaseDefinition(
+						name: 'SECOND',
+						backingValue: 'second',
+					),
+				]),
+				methods: new Collection(),
+			),
+		];
+
+		yield [
+			UnitEnum::class,
+			new EnumTypeDefinition(
+				qualifiedName: UnitEnum::class,
+				fileName: realpath(__DIR__ . '/../../Stubs/Enums/UnitEnum.php'),
+				builtIn: false,
+				backingType: null,
+				implements: new Collection([
+					new NamedType(NonGenericInterface::class),
+					new NamedType(\UnitEnum::class),
+				]),
+				uses: new Collection([
+					new NamedType(TraitWithoutProperties::class),
+					new NamedType(TraitWithoutProperties::class),
+				]),
+				cases: new Collection([
+					new EnumCaseDefinition(
+						name: 'FIRST',
+						backingValue: null,
+					),
+					new EnumCaseDefinition(
+						name: 'SECOND',
+						backingValue: null,
+					),
+				]),
+				methods: new Collection([
+					new MethodDefinition(
+						name: 'function',
+						typeParameters: new Collection(),
+						parameters: new Collection([
+							new FunctionParameterDefinition(
+								name: 'i',
+								type: PrimitiveType::string(),
+							)
+						]),
+						returnType: MixedType::get(),
+					)
 				]),
 			),
 		];
