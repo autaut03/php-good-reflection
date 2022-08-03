@@ -70,8 +70,8 @@ class TraitReflection extends TypeReflection implements HasAttributes
 
 					return match (true) {
 						$reflection instanceof ClassReflection,
-							$reflection instanceof TraitReflection => $reflection->properties(),
-						default => [],
+							$reflection instanceof self => $reflection->properties(),
+						default                      => [],
 					};
 				})
 				->concat($this->declaredProperties())
@@ -92,8 +92,8 @@ class TraitReflection extends TypeReflection implements HasAttributes
 					return match (true) {
 						$reflection instanceof ClassReflection,
 							$reflection instanceof InterfaceReflection,
-							$reflection instanceof TraitReflection => $reflection->methods(),
-						default => [],
+							$reflection instanceof self => $reflection->methods(),
+						default                      => [],
 					};
 				})
 				->concat($this->declaredMethods())

@@ -15,8 +15,8 @@ class TypeContext
 	 */
 	public function __construct(
 		public readonly FileClassLikeContext $fileClassLikeContext,
-		public readonly NamedType            $definingType,
-		public readonly Collection           $typeParameters
+		public readonly NamedType $definingType,
+		public readonly Collection $typeParameters
 	) {
 	}
 

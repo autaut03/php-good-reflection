@@ -589,7 +589,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						variadic: false,
 						upperBound: null,
 						variance: TemplateTypeVariance::INVARIANT,
-					)
+					),
 				]),
 				extends: null,
 				implements: new Collection(),
@@ -614,7 +614,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						variadic: false,
 						upperBound: null,
 						variance: TemplateTypeVariance::CONTRAVARIANT,
-					)
+					),
 				]),
 				extends: null,
 				implements: new Collection(),
@@ -639,7 +639,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						variadic: false,
 						upperBound: null,
 						variance: TemplateTypeVariance::COVARIANT,
-					)
+					),
 				]),
 				extends: null,
 				implements: new Collection(),
@@ -665,10 +665,10 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 							new FunctionParameterDefinition(
 								name: 'i',
 								type: PrimitiveType::string(),
-							)
+							),
 						]),
 						returnType: MixedType::get(),
-					)
+					),
 				]),
 			),
 		];
@@ -685,7 +685,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						variadic: false,
 						upperBound: null,
 						variance: TemplateTypeVariance::INVARIANT,
-					)
+					),
 				]),
 				extends: new Collection(),
 				methods: new Collection(),
@@ -707,7 +707,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						typeParameters: new Collection(),
 						parameters: new Collection(),
 						returnType: new NamedType(Generator::class),
-					)
+					),
 				]),
 			),
 		];
@@ -724,7 +724,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						PrimitiveType::string(),
 					])),
 					new NamedType(\UnitEnum::class),
-					new NamedType(\BackedEnum::class)
+					new NamedType(\BackedEnum::class),
 				]),
 				uses: new Collection(),
 				cases: new Collection([
@@ -774,10 +774,10 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 							new FunctionParameterDefinition(
 								name: 'i',
 								type: PrimitiveType::string(),
-							)
+							),
 						]),
 						returnType: MixedType::get(),
-					)
+					),
 				]),
 			),
 		];

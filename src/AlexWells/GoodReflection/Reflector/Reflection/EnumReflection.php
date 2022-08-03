@@ -52,7 +52,7 @@ class EnumReflection extends TypeReflection implements HasAttributes
 						$reflection instanceof ClassReflection,
 							$reflection instanceof InterfaceReflection,
 							$reflection instanceof TraitReflection => $reflection->methods(),
-						default => [],
+						default                                 => [],
 					};
 				})
 				->concat($this->declaredMethods())

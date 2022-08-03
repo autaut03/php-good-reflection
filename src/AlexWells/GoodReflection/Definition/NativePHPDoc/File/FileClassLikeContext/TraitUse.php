@@ -8,7 +8,6 @@ class TraitUse
 		public readonly string $name,
 		public readonly ?string $docComment,
 		public readonly array $aliases,
-	)
-	{
+	) {
 	}
 }

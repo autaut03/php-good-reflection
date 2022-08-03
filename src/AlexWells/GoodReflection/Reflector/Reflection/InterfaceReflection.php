@@ -63,9 +63,9 @@ class InterfaceReflection extends TypeReflection implements HasAttributes
 
 					return match (true) {
 						$reflection instanceof ClassReflection,
-							$reflection instanceof InterfaceReflection,
+							$reflection instanceof self,
 							$reflection instanceof TraitReflection => $reflection->methods(),
-						default => [],
+						default                                 => [],
 					};
 				})
 				->concat($this->declaredMethods())

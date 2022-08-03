@@ -91,9 +91,9 @@ class ClassReflection extends TypeReflection implements HasAttributes
 					$reflection = $this->reflector->forNamedType($type);
 
 					return match (true) {
-						$reflection instanceof ClassReflection,
+						$reflection instanceof self,
 							$reflection instanceof TraitReflection => $reflection->properties(),
-						default => [],
+						default                                 => [],
 					};
 				})
 				->concat($this->declaredProperties())
@@ -108,18 +108,18 @@ class ClassReflection extends TypeReflection implements HasAttributes
 		);
 		$this->methods = lazy(
 			fn () => collect([
-					...$this->implements(),
-					$this->extends(),
-					$this->uses(),
-				])
+				...$this->implements(),
+				$this->extends(),
+				$this->uses(),
+			])
 				->flatMap(function (Type $type) {
 					$reflection = $this->reflector->forNamedType($type);
 
 					return match (true) {
-						$reflection instanceof ClassReflection,
+						$reflection instanceof self,
 							$reflection instanceof InterfaceReflection,
 							$reflection instanceof TraitReflection => $reflection->methods(),
-						default => [],
+						default                                 => [],
 					};
 				})
 				->concat($this->declaredMethods())

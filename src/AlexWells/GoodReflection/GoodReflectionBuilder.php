@@ -16,7 +16,6 @@ use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\PhpDocTypeMapper;
 use AlexWells\GoodReflection\Definition\NativePHPDoc\PhpDoc\TypeAliasResolver;
 use AlexWells\GoodReflection\Reflector\Reflector;
 use AlexWells\GoodReflection\Type\TypeComparator;
-use Doctrine\Common\Annotations\PhpParser;
 use Illuminate\Container\Container;
 use PhpParser\Lexer\Emulative;
 use PhpParser\Parser;

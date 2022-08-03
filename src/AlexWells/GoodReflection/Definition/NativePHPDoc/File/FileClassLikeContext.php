@@ -12,7 +12,6 @@ class FileClassLikeContext
 		public readonly Collection $traitUses,
 		public readonly Collection $declaredProperties,
 		public readonly Collection $declaredMethods,
-	)
-	{
+	) {
 	}
 }

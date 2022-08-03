@@ -2,7 +2,6 @@
 
 namespace AlexWells\GoodReflection\Definition\NativePHPDoc\File;
 
-use DeepCopy\Reflection\ReflectionHelper;
 use Illuminate\Support\Collection;
 use PhpParser\NameContext;
 use PhpParser\Node;
@@ -18,7 +17,8 @@ use PhpParser\NodeVisitorAbstract;
 use PHPUnit\Framework\Assert;
 use ReflectionProperty;
 
-class ClassLikeContextParsingVisitor extends NodeVisitorAbstract {
+class ClassLikeContextParsingVisitor extends NodeVisitorAbstract
+{
 	/** @var Collection<string, FileClassLikeContext> */
 	public Collection $classLikes;
 
@@ -33,7 +33,7 @@ class ClassLikeContextParsingVisitor extends NodeVisitorAbstract {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * @inheritDoc
 	 */
 	public function enterNode(Node $node)
 	{
@@ -57,7 +57,7 @@ class ClassLikeContextParsingVisitor extends NodeVisitorAbstract {
 		);
 
 		if ($node->name) {
-			$this->classLikes[(string)$node->namespacedName] = $context;
+			$this->classLikes[(string) $node->namespacedName] = $context;
 		} else {
 			Assert::assertArrayNotHasKey(
 				$node->getStartLine(),
@@ -84,7 +84,6 @@ class ClassLikeContextParsingVisitor extends NodeVisitorAbstract {
 		return collect($uses);
 	}
 
-
 	private function traitUses(ClassLike $classLike): Collection
 	{
 		if (!$classLike instanceof Class_ && !$classLike instanceof Trait_) {
@@ -99,8 +98,8 @@ class ClassLikeContextParsingVisitor extends NodeVisitorAbstract {
 						$docComment = $node->getDocComment();
 
 						return new FileClassLikeContext\TraitUse(
-							name: (string)$traitName,
-							docComment: $docComment ? (string)$docComment : null,
+							name: (string) $traitName,
+							docComment: $docComment ? (string) $docComment : null,
 							aliases: []
 						);
 					},
@@ -116,15 +115,15 @@ class ClassLikeContextParsingVisitor extends NodeVisitorAbstract {
 		}
 
 		return collect($classLike->stmts)
-			->filter(fn (Node $node) => $node instanceof Property)
-			->flatMap(fn (Property $node) => $node->props)
+			->filter(fn (Node $node)              => $node instanceof Property)
+			->flatMap(fn (Property $node)         => $node->props)
 			->map(fn (PropertyProperty $property) => (string) $property->name);
 	}
 
 	private function methods(ClassLike $classLike): Collection
 	{
 		return collect($classLike->stmts)
-			->filter(fn (Node $node) => $node instanceof ClassMethod)
+			->filter(fn (Node $node)       => $node instanceof ClassMethod)
 			->map(fn (ClassMethod $method) => (string) $method->name);
 	}
 }

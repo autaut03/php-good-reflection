@@ -25,7 +25,6 @@ use AlexWells\GoodReflection\Util\LateInitLazy;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use PhpParser\Builder\EnumCase;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ExtendsTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ImplementsTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ParamTagValueNode;
@@ -49,10 +48,10 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 {
 	public function __construct(
 		private readonly PhpDocStringParser $phpDocStringParser,
-		private readonly FileContextParser  $fileContextParser,
-		private readonly TypeAliasResolver  $typeAliasResolver,
-		private readonly NativeTypeMapper   $nativeTypeMapper,
-		private readonly PhpDocTypeMapper   $phpDocTypeMapper
+		private readonly FileContextParser $fileContextParser,
+		private readonly TypeAliasResolver $typeAliasResolver,
+		private readonly NativeTypeMapper $nativeTypeMapper,
+		private readonly PhpDocTypeMapper $phpDocTypeMapper
 	) {
 	}
 
