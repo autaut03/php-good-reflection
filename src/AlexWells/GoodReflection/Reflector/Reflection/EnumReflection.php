@@ -6,6 +6,7 @@ use AlexWells\GoodReflection\Definition\TypeDefinition\EnumTypeDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\MethodDefinition;
 use AlexWells\GoodReflection\Reflector\Reflection\Attributes\HasAttributes;
 use AlexWells\GoodReflection\Reflector\Reflection\Attributes\HasNativeAttributes;
+use AlexWells\GoodReflection\Reflector\Reflector;
 use AlexWells\GoodReflection\Type\Template\TypeParameterMap;
 use AlexWells\GoodReflection\Type\Type;
 use Illuminate\Support\Collection;
@@ -21,6 +22,9 @@ use function TenantCloud\Standard\Lazy\lazy;
 class EnumReflection extends TypeReflection implements HasAttributes
 {
 	/** @var Lazy<Collection<int, MethodReflection<$this>>> */
+	private Lazy $declaredMethods;
+
+	/** @var Lazy<Collection<int, MethodReflection<$this>>> */
 	private Lazy $methods;
 
 	private readonly ReflectionEnum $nativeReflection;
@@ -29,12 +33,33 @@ class EnumReflection extends TypeReflection implements HasAttributes
 
 	public function __construct(
 		private readonly EnumTypeDefinition $definition,
+		private readonly Reflector $reflector
 	) {
-		$this->methods = lazy(
+		$this->declaredMethods = lazy(
 			fn () => $this->definition
 				->methods
 				->map(fn (MethodDefinition $method) => new MethodReflection($method, $this, TypeParameterMap::empty()))
 		);
+		$this->methods = lazy(
+			fn () => collect([
+				...$this->implements(),
+				$this->uses(),
+			])
+				->flatMap(function (Type $type) {
+					$reflection = $this->reflector->forNamedType($type);
+
+					return match (true) {
+						$reflection instanceof ClassReflection,
+							$reflection instanceof InterfaceReflection,
+							$reflection instanceof TraitReflection => $reflection->methods(),
+						default => [],
+					};
+				})
+				->concat($this->declaredMethods())
+				->keyBy(fn (MethodReflection $method) => $method->name())
+				->values()
+		);
+
 		$this->nativeReflection = new ReflectionEnum($this->definition->qualifiedName);
 		$this->nativeAttributes = new HasNativeAttributes(fn () => $this->nativeReflection->getAttributes());
 	}
@@ -71,6 +96,14 @@ class EnumReflection extends TypeReflection implements HasAttributes
 	public function uses(): Collection
 	{
 		return $this->definition->uses;
+	}
+
+	/**
+	 * @return Collection<int, MethodReflection<$this>>
+	 */
+	public function declaredMethods(): Collection
+	{
+		return $this->declaredMethods->value();
 	}
 
 	/**

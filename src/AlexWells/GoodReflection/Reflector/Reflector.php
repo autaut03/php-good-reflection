@@ -43,10 +43,10 @@ class Reflector
 		};
 
 		return match (true) {
-			$definition instanceof ClassTypeDefinition     => new Reflection\ClassReflection($definition, $resolvedTypeParameterMap),
-			$definition instanceof InterfaceTypeDefinition => new Reflection\InterfaceReflection($definition, $resolvedTypeParameterMap),
-			$definition instanceof TraitTypeDefinition     => new Reflection\TraitReflection($definition, $resolvedTypeParameterMap),
-			$definition instanceof EnumTypeDefinition      => new Reflection\EnumReflection($definition),
+			$definition instanceof ClassTypeDefinition     => new Reflection\ClassReflection($definition, $resolvedTypeParameterMap, $this),
+			$definition instanceof InterfaceTypeDefinition => new Reflection\InterfaceReflection($definition, $resolvedTypeParameterMap, $this),
+			$definition instanceof TraitTypeDefinition     => new Reflection\TraitReflection($definition, $resolvedTypeParameterMap, $this),
+			$definition instanceof EnumTypeDefinition      => new Reflection\EnumReflection($definition, $this),
 			$definition instanceof SpecialTypeDefinition   => new Reflection\SpecialTypeReflection($definition, $resolvedTypeParameterMap),
 			default                                        => throw new InvalidArgumentException('Unsupported definition of type ' . $definition::class . ' given.')
 		};

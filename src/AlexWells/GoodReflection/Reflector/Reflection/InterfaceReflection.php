@@ -7,6 +7,7 @@ use AlexWells\GoodReflection\Definition\TypeDefinition\MethodDefinition;
 use AlexWells\GoodReflection\Definition\TypeDefinition\TypeParameterDefinition;
 use AlexWells\GoodReflection\Reflector\Reflection\Attributes\HasAttributes;
 use AlexWells\GoodReflection\Reflector\Reflection\Attributes\HasNativeAttributes;
+use AlexWells\GoodReflection\Reflector\Reflector;
 use AlexWells\GoodReflection\Type\Template\TypeParameterMap;
 use AlexWells\GoodReflection\Type\Type;
 use AlexWells\GoodReflection\Type\TypeProjector;
@@ -22,11 +23,14 @@ use function TenantCloud\Standard\Lazy\lazy;
  */
 class InterfaceReflection extends TypeReflection implements HasAttributes
 {
-	/** @var Lazy<Collection<int, MethodReflection<$this>>> */
-	private Lazy $methods;
-
 	/** @var Lazy<Collection<int, Type>> */
 	private Lazy $extends;
+
+	/** @var Lazy<Collection<int, MethodReflection<$this>>> */
+	private Lazy $declaredMethods;
+
+	/** @var Lazy<Collection<int, MethodReflection<$this>>> */
+	private Lazy $methods;
 
 	/** @var ReflectionClass<object> */
 	private readonly ReflectionClass $nativeReflection;
@@ -36,12 +40,8 @@ class InterfaceReflection extends TypeReflection implements HasAttributes
 	public function __construct(
 		private readonly InterfaceTypeDefinition $definition,
 		public readonly TypeParameterMap $resolvedTypeParameterMap,
+		private readonly Reflector $reflector,
 	) {
-		$this->methods = lazy(
-			fn () => $this->definition
-				->methods
-				->map(fn (MethodDefinition $method) => new MethodReflection($method, $this, $resolvedTypeParameterMap))
-		);
 		$this->extends = lazy(
 			fn () => $this->definition
 				->extends
@@ -50,6 +50,29 @@ class InterfaceReflection extends TypeReflection implements HasAttributes
 					$resolvedTypeParameterMap
 				))
 		);
+
+		$this->declaredMethods = lazy(
+			fn () => $this->definition
+				->methods
+				->map(fn (MethodDefinition $method) => new MethodReflection($method, $this, $resolvedTypeParameterMap))
+		);
+		$this->methods = lazy(
+			fn () => $this->extends()
+				->flatMap(function (Type $type) {
+					$reflection = $this->reflector->forNamedType($type);
+
+					return match (true) {
+						$reflection instanceof ClassReflection,
+							$reflection instanceof InterfaceReflection,
+							$reflection instanceof TraitReflection => $reflection->methods(),
+						default => [],
+					};
+				})
+				->concat($this->declaredMethods())
+				->keyBy(fn (MethodReflection $method) => $method->name())
+				->values()
+		);
+
 		$this->nativeReflection = new ReflectionClass($this->definition->qualifiedName);
 		$this->nativeAttributes = new HasNativeAttributes(fn () => $this->nativeReflection->getAttributes());
 	}
@@ -86,6 +109,14 @@ class InterfaceReflection extends TypeReflection implements HasAttributes
 	public function extends(): Collection
 	{
 		return $this->extends->value();
+	}
+
+	/**
+	 * @return Collection<int, MethodReflection<$this>>
+	 */
+	public function declaredMethods(): Collection
+	{
+		return $this->declaredMethods->value();
 	}
 
 	/**
