@@ -28,6 +28,10 @@ final class ClassStub extends ParentClassStub implements ParentInterfaceStub
 	/** @var DoubleTemplateType<SomeStub, T> */
 	private DoubleTemplateType $generic;
 
+	public function __construct(
+		public readonly int $promoted,
+	) {}
+
 	/**
 	 * @template G
 	 *

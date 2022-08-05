@@ -116,8 +116,23 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 							),
 						]))
 					),
+					new PropertyDefinition(
+						name: 'promoted',
+						type: PrimitiveType::integer(),
+					),
 				]),
 				methods: new Collection([
+					new MethodDefinition(
+						name: '__construct',
+						typeParameters: collect(),
+						parameters: collect([
+							new FunctionParameterDefinition(
+								name: 'promoted',
+								type: PrimitiveType::integer(),
+							),
+						]),
+						returnType: null,
+					),
 					new MethodDefinition(
 						name: 'method',
 						typeParameters: collect([

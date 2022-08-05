@@ -204,7 +204,9 @@ class ClassReflection extends TypeReflection implements HasAttributes
 	 */
 	public function declaredMethods(): Collection
 	{
-		return $this->declaredMethods->value();
+		return $this->declaredMethods
+			->value()
+			->reject(fn (MethodReflection $reflection) => $reflection->name() === '__construct');
 	}
 
 	/**
@@ -212,7 +214,19 @@ class ClassReflection extends TypeReflection implements HasAttributes
 	 */
 	public function methods(): Collection
 	{
-		return $this->methods->value();
+		return $this->methods
+			->value()
+			->reject(fn (MethodReflection $reflection) => $reflection->name() === '__construct');
+	}
+
+	/**
+	 * @return MethodReflection<$this>|null
+	 */
+	public function constructor(): ?MethodReflection
+	{
+		return $this->methods
+			->value()
+			->first(fn (MethodReflection $reflection) => $reflection->name() === '__construct');
 	}
 
 	public function isAnonymous(): bool

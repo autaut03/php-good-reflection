@@ -114,10 +114,22 @@ class ClassLikeContextParsingVisitor extends NodeVisitorAbstract
 			return collect();
 		}
 
-		return collect($classLike->stmts)
+		$properties = collect($classLike->stmts)
 			->filter(fn (Node $node)              => $node instanceof Property)
 			->flatMap(fn (Property $node)         => $node->props)
 			->map(fn (PropertyProperty $property) => (string) $property->name);
+
+		$constructor = collect($classLike->stmts)->first(fn (Node $node)       => $node instanceof ClassMethod && (string) $node->name === '__construct');
+
+		if (!$constructor) {
+			return $properties;
+		}
+
+		$promoted = collect($constructor->params)
+			->filter(fn (Node\Param $node) => $node->flags & Class_::VISIBILITY_MODIFIER_MASK)
+			->map(fn (Node\Param $node) => (string) $node->var->name);
+
+		return $properties->concat($promoted);
 	}
 
 	private function methods(ClassLike $classLike): Collection
