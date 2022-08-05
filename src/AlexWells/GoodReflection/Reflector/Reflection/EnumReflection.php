@@ -43,7 +43,7 @@ class EnumReflection extends TypeReflection implements HasAttributes
 		$this->methods = lazy(
 			fn () => collect([
 				...$this->implements(),
-				$this->uses(),
+				...$this->uses(),
 			])
 				->filter()
 				->flatMap(function (Type $type) {
