@@ -163,7 +163,7 @@ class PhpDocTypeMapper
 			new UnionType(
 				$this->map($types, $context)
 			) :
-			$types[0];
+			$this->map($types[0], $context);
 
 		return $containsNull ? new NullableType($mappedType) : $mappedType;
 	}
