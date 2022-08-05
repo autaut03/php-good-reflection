@@ -150,7 +150,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 		$context = new TypeContext(
 			fileClassLikeContext: $this->fileContextParser
 				->parse($reflection)
-				->forClassLike($reflection),
+				?->forClassLike($reflection),
 			definingType: new NamedType($reflection->getName()),
 			typeParameters: new Collection()
 		);
@@ -188,7 +188,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 		);
 
 		return Collection::make($reflection->getProperties())
-			->filter(fn (ReflectionProperty $property) => $context->fileClassLikeContext->declaredProperties->contains($property->getName()))
+			->filter(fn (ReflectionProperty $property) => !$context->fileClassLikeContext || $context->fileClassLikeContext->declaredProperties->contains($property->getName()))
 			->map(function (ReflectionProperty $property) use ($context, $constructorPhpDoc) {
 				$phpDoc = $this->phpDocStringParser->parse($property);
 
@@ -227,7 +227,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 	private function methods(ReflectionClass $reflection, TypeContext $context): Collection
 	{
 		return Collection::make($reflection->getMethods())
-			->filter(fn (ReflectionMethod $method) => $context->fileClassLikeContext->declaredMethods->contains($method->getName()))
+			->filter(fn (ReflectionMethod $method) => !$context->fileClassLikeContext || $context->fileClassLikeContext->declaredMethods->contains($method->getName()))
 			->map(function (ReflectionMethod $method) use ($context) {
 				$phpDoc = $this->phpDocStringParser->parse($method);
 

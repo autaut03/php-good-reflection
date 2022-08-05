@@ -17,8 +17,12 @@ class FileContextParser
 	{
 	}
 
-	public function parse(ReflectionClass|ReflectionFunction $reflection): FileContext
+	public function parse(ReflectionClass|ReflectionFunction $reflection): ?FileContext
 	{
+		if (!$reflection->getFileName()) {
+			return null;
+		}
+
 		$nodes = $this->phpParser->parse(
 			file_get_contents($reflection->getFileName())
 		);

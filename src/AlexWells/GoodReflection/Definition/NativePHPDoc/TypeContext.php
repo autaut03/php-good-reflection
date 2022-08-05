@@ -14,7 +14,7 @@ class TypeContext
 	 * @param Collection<string, Lazy<TypeParameterDefinition>> $typeParameters
 	 */
 	public function __construct(
-		public readonly FileClassLikeContext $fileClassLikeContext,
+		public readonly ?FileClassLikeContext $fileClassLikeContext,
 		public readonly NamedType $definingType,
 		public readonly Collection $typeParameters
 	) {

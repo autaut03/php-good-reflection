@@ -17,7 +17,7 @@ class TypeAliasResolver
 		return mb_strtolower($symbol);
 	}
 
-	public function resolve(string $symbol, FileClassLikeContext $fileClassLikeContext): string
+	public function resolve(string $symbol, ?FileClassLikeContext $fileClassLikeContext): string
 	{
 		// Globally referenced types should always be treated as type names.
 		if (str_starts_with($symbol, '\\')) {
@@ -35,6 +35,10 @@ class TypeAliasResolver
 			], true)
 		) {
 			return $lowerSymbol;
+		}
+
+		if (!$fileClassLikeContext) {
+			return $symbol;
 		}
 
 		$alias = $this->imported($symbol, $fileClassLikeContext);

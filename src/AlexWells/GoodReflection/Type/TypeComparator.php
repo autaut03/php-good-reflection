@@ -18,6 +18,7 @@ use AlexWells\GoodReflection\Type\Special\NeverType;
 use AlexWells\GoodReflection\Type\Special\NullableType;
 use AlexWells\GoodReflection\Type\Special\StaticType;
 use AlexWells\GoodReflection\Type\Special\VoidType;
+use AlexWells\GoodReflection\Type\Template\TemplateType;
 use AlexWells\GoodReflection\Type\Template\TemplateTypeVariance;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -53,6 +54,9 @@ class TypeComparator
 			// baseType of static types should be changed similarly to how it's done with template types.
 			$a instanceof StaticType                           => $this->accepts($a->baseType, $b),
 			$b instanceof StaticType                           => $this->accepts($a, $b->baseType),
+			// todo
+			$a instanceof TemplateType                           => false,
+			$b instanceof TemplateType                           => false,
 			$a instanceof TupleType                            => $this->acceptsTuple($a, $b),
 			$b instanceof TupleType                            => false,
 			$a instanceof NamedType && $b instanceof NamedType => $this->acceptsNamed($a, $b),
