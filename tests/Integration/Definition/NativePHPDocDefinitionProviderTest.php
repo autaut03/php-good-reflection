@@ -118,7 +118,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 					),
 					new PropertyDefinition(
 						name: 'promoted',
-						type: PrimitiveType::integer(),
+						type: new TemplateType('T'),
 					),
 				]),
 				methods: new Collection([
@@ -128,7 +128,7 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						parameters: collect([
 							new FunctionParameterDefinition(
 								name: 'promoted',
-								type: PrimitiveType::integer(),
+								type: new TemplateType('T'),
 							),
 						]),
 						returnType: null,

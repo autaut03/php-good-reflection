@@ -202,7 +202,7 @@ class NativePHPDocDefinitionProvider implements DefinitionProvider
 					/** @var ParamTagValueNode|null $paramNode */
 					$paramNode = Arr::first(
 						$constructorPhpDoc->getParamTagValues(),
-						fn (ParamTagValueNode $node) => $node->parameterName === $property->getName()
+						fn (ParamTagValueNode $node) => Str::after($node->parameterName, '$') === $property->getName()
 					);
 
 					$phpDocType = $paramNode?->type;
