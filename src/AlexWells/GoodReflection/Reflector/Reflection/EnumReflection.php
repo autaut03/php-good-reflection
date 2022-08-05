@@ -45,6 +45,7 @@ class EnumReflection extends TypeReflection implements HasAttributes
 				...$this->implements(),
 				$this->uses(),
 			])
+				->filter()
 				->flatMap(function (Type $type) {
 					$reflection = $this->reflector->forNamedType($type);
 

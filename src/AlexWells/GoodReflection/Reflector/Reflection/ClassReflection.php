@@ -87,6 +87,7 @@ class ClassReflection extends TypeReflection implements HasAttributes
 		);
 		$this->properties = lazy(
 			fn () => collect([$this->extends(), $this->uses()])
+				->filter()
 				->flatMap(function (Type $type) {
 					$reflection = $this->reflector->forNamedType($type);
 
@@ -112,6 +113,7 @@ class ClassReflection extends TypeReflection implements HasAttributes
 				$this->extends(),
 				$this->uses(),
 			])
+				->filter()
 				->flatMap(function (Type $type) {
 					$reflection = $this->reflector->forNamedType($type);
 
