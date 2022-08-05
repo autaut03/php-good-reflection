@@ -123,7 +123,11 @@ class PhpDocTypeMapper
 				PrimitiveType::string(),
 			])),
 			'callable', 'iterable', 'resource', 'object' => new NamedType($type, $arguments),
-			'array', 'associative-array', 'non-empty-array', 'list', 'non-empty-list' => new NamedType('array', $arguments),
+			'array' => match ($arguments->count()) {
+				1 => PrimitiveType::array($arguments[0]),
+				default => new NamedType('array', $arguments)
+			},
+			'associative-array', 'non-empty-array', 'list', 'non-empty-list' => new NamedType('array', $arguments),
 			'scalar' => new UnionType(new Collection([
 				PrimitiveType::integer(),
 				PrimitiveType::float(),
@@ -155,9 +159,11 @@ class PhpDocTypeMapper
 			$containsNull = true;
 		}
 
-		$mappedType = new UnionType(
-			$this->map($types, $context)
-		);
+		$mappedType = count($types) >= 2 ?
+			new UnionType(
+				$this->map($types, $context)
+			) :
+			$types[0];
 
 		return $containsNull ? new NullableType($mappedType) : $mappedType;
 	}
