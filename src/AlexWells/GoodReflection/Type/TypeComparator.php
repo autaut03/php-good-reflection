@@ -16,6 +16,7 @@ use AlexWells\GoodReflection\Type\Special\ErrorType;
 use AlexWells\GoodReflection\Type\Special\MixedType;
 use AlexWells\GoodReflection\Type\Special\NeverType;
 use AlexWells\GoodReflection\Type\Special\NullableType;
+use AlexWells\GoodReflection\Type\Special\ParentType;
 use AlexWells\GoodReflection\Type\Special\StaticType;
 use AlexWells\GoodReflection\Type\Special\VoidType;
 use AlexWells\GoodReflection\Type\Template\TemplateType;
@@ -54,6 +55,9 @@ class TypeComparator
 			// baseType of static types should be changed similarly to how it's done with template types.
 			$a instanceof StaticType                           => $this->accepts($a->baseType, $b),
 			$b instanceof StaticType                           => $this->accepts($a, $b->baseType),
+			// todo
+			$a instanceof ParentType                           => false,
+			$b instanceof ParentType                           => false,
 			// todo
 			$a instanceof TemplateType                           => false,
 			$b instanceof TemplateType                           => false,

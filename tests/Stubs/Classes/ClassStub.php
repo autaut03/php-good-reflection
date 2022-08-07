@@ -63,4 +63,8 @@ final class ClassStub extends ParentClassStub implements ParentInterfaceStub
 	public function self(): static
 	{
 	}
+
+	public function par(): parent
+	{
+	}
 }

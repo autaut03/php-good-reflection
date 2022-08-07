@@ -20,6 +20,7 @@ use AlexWells\GoodReflection\Type\Special\ErrorType;
 use AlexWells\GoodReflection\Type\Special\MixedType;
 use AlexWells\GoodReflection\Type\Special\NeverType;
 use AlexWells\GoodReflection\Type\Special\NullableType;
+use AlexWells\GoodReflection\Type\Special\ParentType;
 use AlexWells\GoodReflection\Type\Special\StaticType;
 use AlexWells\GoodReflection\Type\Special\VoidType;
 use AlexWells\GoodReflection\Type\Template\TemplateType;
@@ -200,6 +201,14 @@ class NativePHPDocDefinitionProviderTest extends TestCase
 						typeParameters: collect([]),
 						parameters: collect([]),
 						returnType: new StaticType(
+							new NamedType(ClassStub::class)
+						)
+					),
+					new MethodDefinition(
+						name: 'par',
+						typeParameters: collect([]),
+						parameters: collect([]),
+						returnType: new ParentType(
 							new NamedType(ClassStub::class)
 						)
 					),

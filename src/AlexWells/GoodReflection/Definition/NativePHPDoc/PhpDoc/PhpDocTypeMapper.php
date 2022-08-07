@@ -12,6 +12,7 @@ use AlexWells\GoodReflection\Type\Special\ErrorType;
 use AlexWells\GoodReflection\Type\Special\MixedType;
 use AlexWells\GoodReflection\Type\Special\NeverType;
 use AlexWells\GoodReflection\Type\Special\NullableType;
+use AlexWells\GoodReflection\Type\Special\ParentType;
 use AlexWells\GoodReflection\Type\Special\StaticType;
 use AlexWells\GoodReflection\Type\Special\VoidType;
 use AlexWells\GoodReflection\Type\Template\TemplateType;
@@ -139,6 +140,7 @@ class PhpDocTypeMapper
 				PrimitiveType::boolean(),
 			])),
 			'self'   => $context->definingType,
+			'parent' => new ParentType($context->definingType),
 			'static' => new StaticType($context->definingType),
 			default  => null,
 		};
