@@ -42,9 +42,11 @@ class NativeTypeMapper
 			),
 			$type instanceof ReflectionUnionType => new UnionType(
 				$this->map(
-					array_filter(
-						$type->getTypes(),
-						fn (ReflectionType $type) => !$isNull($type)
+					array_values(
+						array_filter(
+							$type->getTypes(),
+							fn (ReflectionType $type) => !$isNull($type)
+						)
 					),
 					$context
 				)

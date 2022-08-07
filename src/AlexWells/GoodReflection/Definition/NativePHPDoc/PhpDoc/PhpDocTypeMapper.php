@@ -45,51 +45,55 @@ class PhpDocTypeMapper
 	 */
 	public function map(TypeNode|iterable $node, TypeContext $context): Type|Collection
 	{
-		if (!$node instanceof TypeNode) {
-			return Collection::wrap($node)->map(fn ($node) => $this->map($node, $context));
-		}
+		try {
+			if (!$node instanceof TypeNode) {
+				return Collection::wrap($node)->map(fn($node) => $this->map($node, $context));
+			}
 
-		return match (true) {
-			$node instanceof ArrayTypeNode => PrimitiveType::array(
-				$this->map($node->type, $context)
-			),
-			$node instanceof ArrayShapeNode                           => new TupleType(
-				collect($node->items)->map(fn (ArrayShapeItemNode $node) => $this->map($node->valueType, $context))
-			),
-			$node instanceof CallableTypeNode => $this->mapNamed(
-				$node->identifier->name,
-				new Collection([
-					$this->map($node->returnType, $context),
-					...array_map(
-						fn (CallableTypeParameterNode $parameterNode) => $this->map($parameterNode->type, $context),
-						$node->parameters
-					),
-				]),
-				$context,
-			),
-			$node instanceof GenericTypeNode => $this->mapNamed(
-				$node->type->name,
-				$this->map($node->genericTypes, $context),
-				$context,
-			),
-			$node instanceof IdentifierTypeNode => $this->mapNamed(
-				$node->name,
-				new Collection(),
-				$context,
-			),
-			$node instanceof IntersectionTypeNode => new IntersectionType(
-				$this->map($node->types, $context)
-			),
-			$node instanceof NullableTypeNode => new NullableType(
-				$this->map($node->type, $context),
-			),
-			// todo: check
-			$node instanceof ThisTypeNode => new StaticType(
-				$context->definingType,
-			),
-			$node instanceof UnionTypeNode => $this->mapUnion($node, $context),
-			default                        => new ErrorType((string) $node),
-		};
+			return match (true) {
+				$node instanceof ArrayTypeNode => PrimitiveType::array(
+					$this->map($node->type, $context)
+				),
+				$node instanceof ArrayShapeNode => new TupleType(
+					collect($node->items)->map(fn(ArrayShapeItemNode $node) => $this->map($node->valueType, $context))
+				),
+				$node instanceof CallableTypeNode => $this->mapNamed(
+					$node->identifier->name,
+					new Collection([
+						$this->map($node->returnType, $context),
+						...array_map(
+							fn(CallableTypeParameterNode $parameterNode) => $this->map($parameterNode->type, $context),
+							$node->parameters
+						),
+					]),
+					$context,
+				),
+				$node instanceof GenericTypeNode => $this->mapNamed(
+					$node->type->name,
+					$this->map($node->genericTypes, $context),
+					$context,
+				),
+				$node instanceof IdentifierTypeNode => $this->mapNamed(
+					$node->name,
+					new Collection(),
+					$context,
+				),
+				$node instanceof IntersectionTypeNode => new IntersectionType(
+					$this->map($node->types, $context)
+				),
+				$node instanceof NullableTypeNode => new NullableType(
+					$this->map($node->type, $context),
+				),
+				// todo: check
+				$node instanceof ThisTypeNode => new StaticType(
+					$context->definingType,
+				),
+				$node instanceof UnionTypeNode => $this->mapUnion($node, $context),
+				default => new ErrorType((string)$node),
+			};
+		} catch (\Exception $e) {
+			return new ErrorType((string) $node);
+		}
 	}
 
 	/**
@@ -155,7 +159,9 @@ class PhpDocTypeMapper
 		$containsNull = false;
 
 		if (Arr::first($types, $isNullNode)) {
-			$types = array_filter($types, fn (TypeNode $node) => !$isNullNode($node));
+			$types = array_values(
+				array_filter($types, fn (TypeNode $node) => !$isNullNode($node))
+			);
 			$containsNull = true;
 		}
 
