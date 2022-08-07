@@ -64,9 +64,9 @@ class GoodReflectionBuilder
 	{
 		$builder = clone $this;
 
-		$this->container->singleton(CacheStorage::class, fn () => new SymfonyVarExportCacheStorage($path));
-		$this->container->singleton(VerifiedCache::class);
-		$this->container->singleton(
+		$builder->container->singleton(CacheStorage::class, fn () => new SymfonyVarExportCacheStorage($path));
+		$builder->container->singleton(VerifiedCache::class);
+		$builder->container->singleton(
 			DefinitionProvider::class,
 			fn (Container $container) => new FallbackDefinitionProvider([
 				$container->make(BuiltInSpecialsDefinitionProvider::class),
